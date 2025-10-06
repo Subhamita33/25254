@@ -25,7 +25,7 @@ This system will help authorities and decision-makers **quickly locate, interpre
 
 | Category | Technologies |
 |-----------|---------------|
-| **Frontend** | HTML, CSS, JavaScript, React (optional) |
+| **Frontend** | HTML, CSS, JavaScript |
 | **Backend** | Python (Flask / FastAPI) |
 | **Database** | PostgreSQL / MongoDB |
 | **AI/ML Components** | LangChain, FAISS / ChromaDB, OpenAI API / LLaMA |
@@ -68,7 +68,7 @@ This system will help authorities and decision-makers **quickly locate, interpre
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/25254.git
-cd EduSearchAI
+cd 25254
 
 # Create a virtual environment
 python -m venv venv
