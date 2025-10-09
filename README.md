@@ -1,9 +1,10 @@
 1. All connections done!!
-2. Just run 
+2. Update the groq-api-key
+3. Just run 
     ```bash
     uvicorn app2:app --reload
     ```
-3. Go to
+4. Go to
    ```bash
    http://localhost:8000
    ```
