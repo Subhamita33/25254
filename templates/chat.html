@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Document RAG Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container active">
+        <div class="form-box SignUp">
+            <!-- Header Section -->
+            <div class="header-section" style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin-bottom: 5px; color: #333;">
+                    <i class="fas fa-file-alt" style="margin-right: 10px; color: #7494ec;"></i>
+                    Document RAG Chat
+                </h1>
+                <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                    Upload documents and get intelligent answers using AI
+                </p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section" style="background: #f8f9ff; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e6e9ff;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div style="background: #7494ec; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                        <i class="fas fa-upload" style="color: white; font-size: 14px;"></i>
+                    </div>
+                    <h2 style="font-size: 18px; margin: 0; color: #333;">Upload Document</h2>
+                </div>
+                
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="input-box" style="margin-bottom: 15px; position: relative;">
+                        <input type="file" id="file-input" name="file" accept=".pdf,.docx,.doc" required 
+                               style="padding: 15px 50px 15px 20px; cursor: pointer;">
+                        <i class="fas fa-file-upload" style="color: #7494ec;"></i>
+                    </div>
+                    <button type="submit" class="btn upload-btn" style="margin: 0;">
+                        <i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i>
+                        Upload & Process Document
+                    </button>
+                </form>
+                <p id="upload-status" style="margin-top: 12px; font-size: 13px; text-align: left; min-height: 20px; padding: 0 5px;"></p>
+            </div>
+
+            <!-- Chat Section -->
+            <div class="chat-section" style="background: #f8f9ff; padding: 20px; border-radius: 12px; border: 1px solid #e6e9ff;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <div style="background: #7494ec; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                        <i class="fas fa-comments" style="color: white; font-size: 14px;"></i>
+                    </div>
+                    <h2 style="font-size: 18px; margin: 0; color: #333;">Ask Questions</h2>
+                </div>
+
+                <!-- Chat Window -->
+                <div id="chat-window" class="chat-window" style="height: 250px; background: white; border: 1px solid #e1e5e9;">
+                    <div class="message ai welcome-message">
+                        <div style="text-align: center; padding: 20px;">
+                            <i class="fas fa-robot" style="font-size: 32px; color: #7494ec; margin-bottom: 10px;"></i>
+                            <p style="margin: 5px 0; color: #666;">
+                                <strong>Welcome to Document RAG Chat!</strong>
+                            </p>
+                            <p style="margin: 5px 0; font-size: 13px; color: #888;">
+                                Upload a document to start asking questions about its content.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query Form -->
+                <form id="query-form" class="query-form" style="margin-top: 15px;">
+                    <div class="input-box" style="margin-bottom: 10px;">
+                        <input type="text" id="query-input" placeholder="Type your question here..." required 
+                               style="padding: 15px 50px 15px 20px;">
+                        <i class="fas fa-question-circle" style="color: #7494ec;"></i>
+                    </div>
+                    <button type="submit" id="send-button" class="btn send-btn">
+                        <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                        Send Question
+                    </button>
+                </form>
+            </div>
+
+            <!-- Status Indicator -->
+            <div id="status-indicator" style="margin-top: 15px; display: none;">
+                <div style="display: flex; align-items: center; justify-content: center; padding: 10px; background: #f0f4ff; border-radius: 8px;">
+                    <div class="loading-spinner" style="width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #7494ec; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>
+                    <span style="color: #7494ec; font-size: 13px;">Processing your question...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Panel -->
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <div style="text-align: center;">
+                    <i class="fas fa-file-search" style="font-size: 48px; margin-bottom: 20px; color: white;"></i>
+                    <h1>Smart Document Q&A</h1>
+                    <p>Upload PDF or Word documents and get instant answers powered by AI technology.</p>
+                </div>
+            </div>
+            <div class="toggle-panel toggle-right">
+                <div style="text-align: center;">
+                    <i class="fas fa-brain" style="font-size: 48px; margin-bottom: 20px; color: white;"></i>
+                    <h1>AI-Powered Insights</h1>
+                    <p>Built with FastAPI, LangChain, FAISS, and Groq for intelligent document analysis.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        .chat-window {
+            scrollbar-width: thin;
+            scrollbar-color: #7494ec #f1f1f1;
+        }
+
+        .chat-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-window::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background: #7494ec;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover {
+            background: #5a7bd6;
+        }
+
+        .message {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background: #f0f4ff;
+            border-left: 4px solid #7494ec;
+            margin-left: 20px;
+        }
+
+        .message.ai {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            margin-right: 20px;
+        }
+
+        .message.welcome-message {
+            background: transparent;
+            border: none;
+            text-align: center;
+        }
+
+        .message strong {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-box input:focus {
+            border: 2px solid #7494ec;
+            background: #f8f9ff;
+        }
+
+        .btn:hover {
+            background: #5a7bd6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(116, 148, 236, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+    </style>
+
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const queryForm = document.getElementById('query-form');
+        const chatWindow = document.getElementById('chat-window');
+        const uploadStatus = document.getElementById('upload-status');
+        const sendButton = document.getElementById('send-button');
+        const statusIndicator = document.getElementById('status-indicator');
+        const queryInput = document.getElementById('query-input');
+
+        // Apply 'active' class to keep the chat interface visible
+        document.querySelector('.container').classList.add('active');
+
+        // --- Chat Display Utility ---
+        function appendMessage(sender, text) {
+            // Remove welcome message if it exists
+            const welcomeMsg = chatWindow.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+
+            let senderName = sender === 'user' ? 'YOU' : 'AI';
+            let icon = sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
+            let iconColor = sender === 'user' ? '#7494ec' : '#28a745';
+
+            msgDiv.innerHTML = `
+                <strong style="color: ${iconColor};">
+                    <i class="${icon}" style="margin-right: 6px;"></i>${senderName}
+                </strong>
+                <div style="color: #333; font-size: 14px; line-height: 1.5;">${text.replace(/\\n/g, '<br>')}</div>
+            `;
+
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // --- File Upload Logic ---
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            
+            if (!fileInput.files[0]) {
+                uploadStatus.textContent = 'Please select a file first.';
+                uploadStatus.style.color = '#e74c3c';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing document...';
+            uploadStatus.style.color = '#7494ec';
+
+            try {
+                const response = await fetch('/upload-file', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
+                    uploadStatus.style.color = '#27ae60';
+                    
+                    // Clear any existing messages and show success message
+                    const welcomeMsg = chatWindow.querySelector('.welcome-message');
+                    if (welcomeMsg) welcomeMsg.remove();
+                    
+                    appendMessage('ai', `✅ Document "${fileInput.files[0].name}" has been successfully processed! You can now ask questions about its content.`);
+                    
+                    // Enable query input
+                    queryInput.disabled = false;
+                    queryInput.placeholder = "Ask a question about the document...";
+                    
+                } else {
+                    uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.detail}`;
+                    uploadStatus.style.color = '#e74c3c';
+                }
+            } catch (error) {
+                uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload.';
+                uploadStatus.style.color = '#e74c3c';
+            }
+        });
+
+        // --- Query Logic ---
+        queryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = queryInput.value.trim();
+
+            if (!question) return;
+
+            // Display user question
+            appendMessage('user', question);
+            queryInput.value = '';
+            queryInput.disabled = true;
+            sendButton.disabled = true;
+            statusIndicator.style.display = 'block';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: question }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    appendMessage('ai', data.answer);
+                } else {
+                    appendMessage('ai', `❌ ${data.detail || 'Failed to get answer. Please try again.'}`);
+                }
+            } catch (error) {
+                appendMessage('ai', '❌ Network error while processing your question. Please check your connection.');
+            } finally {
+                queryInput.disabled = false;
+                sendButton.disabled = false;
+                statusIndicator.style.display = 'none';
+                queryInput.focus();
+            }
+        });
+
+        // Enable query input when page loads (will be disabled until document is uploaded)
+        queryInput.disabled = true;
+        queryInput.placeholder = "Please upload a document first...";
+
+        // Add some interactivity to file input
+        const fileInput = document.getElementById('file-input');
+        fileInput.addEventListener('change', function() {
+            if (this.files[0]) {
+                const fileName = this.files[0].name;
+                uploadStatus.textContent = `Selected: ${fileName}`;
+                uploadStatus.style.color = '#27ae60';
+            }
+        });
+
+        // Auto-focus on query input when it becomes enabled
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (!queryInput.disabled) {
+                    queryInput.focus();
+                }
+            });
+        });
+        
+        observer.observe(queryInput, { attributes: true, attributeFilter: ['disabled'] });
+    </script>
+</body>
+</html>
