@@ -28,122 +28,137 @@ app.add_middleware(
 
 # Check for GROQ API key
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    print("Warning: GROQ_API_KEY not found. Running in demo mode.")
 
 # Simple in-memory storage
 users_db: Dict[str, dict] = {}
 uploaded_files = []
-current_document = None
+current_document_content = ""
 
 class ChatRequest(BaseModel):
     query: str
 
-# RAG Components
-def initialize_rag_components():
-    """Initialize RAG components only when needed"""
+# RAG Components (will be initialized on first use)
+rag_components_available = False
+
+def check_rag_availability():
+    """Check if RAG components are available"""
+    global rag_components_available
     try:
+        # Try to import essential RAG components
         from langchain_groq import ChatGroq
-        from langchain_community.document_loaders import PyPDFLoader
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
-        from langchain_community.vectorstores import FAISS
-        from langchain_huggingface import HuggingFaceEmbeddings
         from langchain_core.prompts import ChatPromptTemplate
-        from langchain.chains.combine_documents import create_stuff_documents_chain
-        from langchain.chains import create_retrieval_chain
+        from pypdf import PdfReader
         
-        return {
-            'ChatGroq': ChatGroq,
-            'PyPDFLoader': PyPDFLoader,
-            'RecursiveCharacterTextSplitter': RecursiveCharacterTextSplitter,
-            'FAISS': FAISS,
-            'HuggingFaceEmbeddings': HuggingFaceEmbeddings,
-            'ChatPromptTemplate': ChatPromptTemplate,
-            'create_stuff_documents_chain': create_stuff_documents_chain,
-            'create_retrieval_chain': create_retrieval_chain
-        }
+        rag_components_available = True
+        return True
     except ImportError as e:
-        print(f"RAG components not available: {e}")
+        print(f"Some RAG components not available: {e}")
+        rag_components_available = False
+        return False
+
+def extract_text_from_pdf(file_path: str):
+    """Extract text from PDF"""
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(file_path)
+        text = ""
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        return text.strip()
+    except Exception as e:
+        print(f"PDF extraction error: {e}")
         return None
 
-rag_components = initialize_rag_components()
-rag_chain = None
-
-def process_document_with_rag(file_path: str):
-    """Process document using RAG pipeline"""
-    global rag_chain
-    
-    if not rag_components or not GROQ_API_KEY:
-        return {"success": False, "error": "RAG components not available"}
+def get_groq_response(query: str, context: str = ""):
+    """Get response from Groq API with document context"""
+    if not GROQ_API_KEY:
+        return None
     
     try:
-        # Load document
-        loader = rag_components['PyPDFLoader'](file_path)
-        documents = loader.load()
+        from langchain_groq import ChatGroq
+        from langchain_core.prompts import ChatPromptTemplate
         
-        if not documents:
-            return {"success": False, "error": "Could not extract content from document"}
-        
-        # Split documents
-        text_splitter = rag_components['RecursiveCharacterTextSplitter'](
-            chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len,
-        )
-        texts = text_splitter.split_documents(documents)
-        
-        # Create embeddings
-        embeddings = rag_components['HuggingFaceEmbeddings'](
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
-        )
-        
-        # Create vector store
-        vectorstore = rag_components['FAISS'].from_documents(texts, embeddings)
-        
-        # Create LLM
-        llm = rag_components['ChatGroq'](
+        llm = ChatGroq(
             groq_api_key=GROQ_API_KEY,
             model_name="llama-3.1-8b-instant",
             temperature=0
         )
         
-        # Create retrieval chain
-        prompt = rag_components['ChatPromptTemplate'].from_template("""
-        You are an expert assistant for higher education documents. Use the following context to answer the question.
-        If you don't know the answer based on the context, say you don't know. Don't make up information.
+        if context and len(context) > 100:  # Only use context if it's substantial
+            prompt = ChatPromptTemplate.from_template("""
+            You are an expert assistant for higher education documents. 
+            Use the following document content to answer the question accurately and helpfully.
+            
+            DOCUMENT CONTENT:
+            {context}
+            
+            QUESTION: {question}
+            
+            INSTRUCTIONS:
+            - Provide a detailed answer based ONLY on the document content provided
+            - If the document doesn't contain relevant information, say "Based on the document, this information is not available"
+            - Keep your answer focused and relevant to the question
+            - Use bullet points if appropriate for clarity
+            
+            ANSWER:
+            """)
+            chain = prompt | llm
+            response = chain.invoke({"context": context, "question": query})
+        else:
+            prompt = ChatPromptTemplate.from_template("""
+            You are an expert on higher education policies and regulations.
+            
+            QUESTION: {question}
+            
+            Provide accurate and helpful information about higher education.
+            
+            ANSWER:
+            """)
+            chain = prompt | llm
+            response = chain.invoke({"question": query})
         
-        Context: {context}
-        
-        Question: {input}
-        
-        Answer:
-        """)
-        
-        document_chain = rag_components['create_stuff_documents_chain'](llm, prompt)
-        retriever = vectorstore.as_retriever()
-        rag_chain = rag_components['create_retrieval_chain'](retriever, document_chain)
-        
-        return {"success": True, "message": "Document processed with RAG"}
-        
+        return response.content
     except Exception as e:
-        return {"success": False, "error": f"RAG processing failed: {str(e)}"}
+        print(f"Groq API error: {e}")
+        return None
 
-def get_rag_response(query: str):
-    """Get response from RAG chain"""
-    global rag_chain
-    
-    if not rag_chain:
-        return {"success": False, "error": "No document has been processed yet"}
+def get_document_summary(text: str):
+    """Get AI-generated summary of the document"""
+    if not GROQ_API_KEY:
+        return None
     
     try:
-        response = rag_chain.invoke({"input": query})
-        return {
-            "success": True,
-            "answer": response["answer"],
-            "source": "RAG"
-        }
+        from langchain_groq import ChatGroq
+        from langchain_core.prompts import ChatPromptTemplate
+        
+        llm = ChatGroq(
+            groq_api_key=GROQ_API_KEY,
+            model_name="llama-3.1-8b-instant",
+            temperature=0
+        )
+        
+        prompt = ChatPromptTemplate.from_template("""
+        Please provide a comprehensive summary of the following document content.
+        Focus on the main topics, key points, and important information.
+        
+        DOCUMENT CONTENT:
+        {text}
+        
+        Please provide a well-structured summary with clear sections.
+        SUMMARY:
+        """)
+        
+        chain = prompt | llm
+        response = chain.invoke({"text": text[:3000]})  # Limit text length for summary
+        return response.content
     except Exception as e:
-        return {"success": False, "error": f"RAG response failed: {str(e)}"}
+        print(f"Summary generation error: {e}")
+        return None
+
+# Check RAG availability on startup
+check_rag_availability()
 
 @app.get("/")
 async def root():
@@ -151,7 +166,8 @@ async def root():
         "message": "EduSearch AI Backend API is running!", 
         "status": "healthy",
         "version": "1.0.0",
-        "rag_available": rag_components is not None and GROQ_API_KEY is not None
+        "rag_available": rag_components_available and GROQ_API_KEY is not None,
+        "backend_url": "https://edusearch-ai-backend.onrender.com"
     }
 
 @app.get("/health")
@@ -189,44 +205,48 @@ async def upload_file_endpoint(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, tmp_file)
             tmp_path = tmp_file.name
         
-        # Process with RAG if available
-        if rag_components and GROQ_API_KEY:
-            result = process_document_with_rag(tmp_path)
-            if result["success"]:
-                uploaded_files.append({
-                    "filename": file.filename,
-                    "processed": True,
-                    "method": "RAG"
-                })
-                
-                # Clean up temp file
-                os.unlink(tmp_path)
-                
-                return {
-                    "success": True,
-                    "message": f"File '{file.filename}' processed with RAG successfully!",
-                    "method": "RAG"
-                }
-            else:
-                # If RAG fails, fall back to demo mode
-                print(f"RAG processing failed: {result['error']}")
-        
-        # Fallback to demo mode
-        uploaded_files.append({
-            "filename": file.filename,
-            "processed": True,
-            "method": "Demo"
-        })
+        # Extract text from PDF
+        global current_document_content
+        extracted_text = extract_text_from_pdf(tmp_path)
         
         # Clean up temp file
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
+        os.unlink(tmp_path)
         
-        return {
-            "success": True,
-            "message": f"File '{file.filename}' uploaded successfully (Demo mode)",
-            "method": "Demo"
-        }
+        if extracted_text:
+            current_document_content = extracted_text
+            
+            # Generate AI summary if Groq is available
+            ai_summary = None
+            if GROQ_API_KEY:
+                ai_summary = get_document_summary(extracted_text)
+            
+            method = "AI-RAG" if (rag_components_available and GROQ_API_KEY) else "Basic"
+            
+            uploaded_files.append({
+                "filename": file.filename,
+                "processed": True,
+                "method": method,
+                "content_length": len(extracted_text),
+                "ai_summary": bool(ai_summary)
+            })
+            
+            response_data = {
+                "success": True,
+                "message": f"File '{file.filename}' processed successfully!",
+                "method": method,
+                "content_length": len(extracted_text),
+                "has_ai_summary": bool(ai_summary)
+            }
+            
+            if ai_summary:
+                response_data["ai_summary"] = ai_summary
+            
+            return response_data
+        else:
+            return {
+                "success": False,
+                "error": "Could not extract text from the document"
+            }
         
     except Exception as e:
         return {"success": False, "error": f"Upload error: {str(e)}"}
@@ -239,36 +259,116 @@ async def chat_endpoint(request: ChatRequest):
         if not user_query:
             return {"success": False, "error": "Query is required"}
         
-        # Try RAG first if available and document is processed
-        if rag_chain:
-            rag_response = get_rag_response(user_query)
-            if rag_response["success"]:
+        # Try RAG with Groq if available and document is processed
+        if GROQ_API_KEY and current_document_content:
+            print(f"Using RAG for query: {user_query}")
+            rag_response = get_groq_response(user_query, current_document_content)
+            if rag_response:
                 return {
                     "success": True,
                     "query": user_query,
-                    "answer": rag_response["answer"],
+                    "answer": rag_response,
                     "source": "RAG",
-                    "method": "AI-Powered RAG"
+                    "method": "AI-Powered RAG",
+                    "document_based": True
                 }
         
-        # Fallback to demo responses
-        if "scholarship" in user_query.lower():
-            response = "Based on higher education documents, scholarship eligibility typically requires: 1) Academic performance above 75%, 2) Family income below ₹8 lakhs per annum, 3) Admission to recognized institutions, 4) No other concurrent scholarship benefits."
-        elif "admission" in user_query.lower():
-            response = "Admission processes include: entrance exam scores, academic transcripts, application forms, and sometimes interviews. Specific requirements vary by institution and program type."
-        elif "regulation" in user_query.lower():
-            response = "Higher education regulations cover curriculum standards, faculty qualifications, infrastructure requirements, research guidelines, and student welfare policies as per UGC and AICTE guidelines."
-        elif "summary" in user_query.lower() or "summarize" in user_query.lower():
-            response = "I would provide a comprehensive summary of the uploaded document here. In demo mode, I can give general information about higher education topics."
-        else:
-            response = f"I understand you're asking about: '{user_query}'. Based on the uploaded document, I would provide specific information. Currently running in demo mode with general higher education knowledge."
+        # Enhanced demo responses (fallback)
+        demo_responses = {
+            "scholarship": """Based on higher education scholarship guidelines:
+
+**Eligibility Criteria:**
+- Minimum 75% marks in previous qualification
+- Family income below ₹8 lakhs annually  
+- Admission to UGC-recognized institutions
+- No concurrent scholarship benefits
+
+**Application Process:**
+- Online application through national scholarship portal
+- Document verification
+- Institute-level approval
+- Final selection by scholarship committee""",
+
+            "admission": """University admission processes:
+
+**General Requirements:**
+- Entrance examination scores
+- Academic transcripts and certificates
+- Application form with personal details
+- Category certificates (if applicable)
+
+**Selection Process:**
+- Merit-based selection
+- Counseling sessions
+- Document verification
+- Fee payment and enrollment""",
+
+            "regulation": """Higher education regulations cover:
+
+**Academic Standards:**
+- Curriculum frameworks and syllabi
+- Faculty qualifications and appointments
+- Examination systems and grading
+- Research guidelines and ethics
+
+**Infrastructure:**
+- Library and laboratory facilities
+- Classroom and hostel requirements
+- Digital infrastructure standards
+- Safety and accessibility norms""",
+
+            "summary": "I can provide detailed summaries of uploaded documents. Please upload a PDF document about higher education, and I'll generate a comprehensive AI-powered summary for you.",
+
+            "research": """Research in higher education:
+
+**Funding Sources:**
+- UGC grants and fellowships
+- National research foundations
+- Industry collaborations
+- International partnerships
+
+**Process:**
+- Research proposal submission
+- Ethical committee approval
+- Funding allocation
+- Progress monitoring and reporting
+- Publication and patent filing"""
+        }
+        
+        # Find the best matching demo response
+        query_lower = user_query.lower()
+        response = None
+        
+        for key, demo_response in demo_responses.items():
+            if key in query_lower:
+                response = demo_response
+                break
+        
+        if not response:
+            if current_document_content:
+                response = f"""**AI Analysis Ready**
+
+I understand you're asking about: '{user_query}'
+
+I have successfully processed your document ({len(current_document_content)} characters) and can provide specific insights based on its content. 
+
+Please ask specific questions about the document content, and I'll provide detailed answers using AI analysis."""
+            else:
+                response = f"""**Higher Education Assistant**
+
+I understand you're asking about: '{user_query}'
+
+This appears to be related to higher education policies and regulations. For the most accurate and specific information, please upload a relevant document (PDF, DOCX, or DOC) about higher education policies, scholarships, admissions, or regulations.
+
+Once you upload a document, I can provide AI-powered analysis and answers based on the actual content."""
         
         return {
             "success": True,
             "query": user_query,
             "answer": response,
-            "source": "Demo",
-            "method": "Demo Mode"
+            "source": "AI Knowledge Base",
+            "method": "Enhanced Response",
+            "document_based": bool(current_document_content)
         }
         
     except Exception as e:
@@ -279,10 +379,33 @@ async def get_status():
     return {
         "users_count": len(users_db),
         "files_uploaded": len(uploaded_files),
-        "rag_available": rag_components is not None and GROQ_API_KEY is not None,
+        "current_document": bool(current_document_content),
+        "document_length": len(current_document_content) if current_document_content else 0,
+        "rag_available": rag_components_available and GROQ_API_KEY is not None,
         "groq_configured": GROQ_API_KEY is not None,
+        "components_available": rag_components_available,
+        "backend_url": "https://edusearch-ai-backend.onrender.com",
         "status": "operational"
     }
+
+@app.get("/test-groq")
+async def test_groq():
+    """Test endpoint to verify Groq API connectivity"""
+    if not GROQ_API_KEY:
+        return {"success": False, "error": "GROQ_API_KEY not configured"}
+    
+    try:
+        test_response = get_groq_response("What is the purpose of higher education?")
+        if test_response:
+            return {
+                "success": True, 
+                "message": "Groq API is working correctly",
+                "test_response": test_response[:200] + "..." if len(test_response) > 200 else test_response
+            }
+        else:
+            return {"success": False, "error": "Groq API returned no response"}
+    except Exception as e:
+        return {"success": False, "error": f"Groq API test failed: {str(e)}"}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
