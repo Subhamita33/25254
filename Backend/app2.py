@@ -22,19 +22,23 @@ load_dotenv()
 
 app = FastAPI(title="EduSearch AI Backend", description="Intelligent Retrieval System for Higher Education Data")
 
-# Add CORS middleware
+# Add CORS middleware - UPDATE WITH YOUR NETLIFY URL
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:8000",
-        "https://your-netlify-app.netlify.app",  # Your Netlify URL
-        "https://*.netlify.app"  # Allow all Netlify subdomains
+        "https://your-actual-netlify-app.netlify.app",  # REPLACE WITH YOUR ACTUAL NETLIFY URL
+        "https://*.netlify.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Check for GROQ API key
+if not os.getenv("GROQ_API_KEY"):
+    raise ValueError("GROQ_API_KEY environment variable is not set")
 
 # Simple user storage (in production, use a database)
 users_db: Dict[str, dict] = {}
@@ -47,55 +51,64 @@ def process_and_index_file(file_path: str, file_type: str):
     """Loads, chunks, and indexes a single file."""
     all_documents = []
 
-    if file_type == 'pdf':
-        loader = PyPDFLoader(file_path)
-    elif file_type in ['docx', 'doc']:
-        loader = UnstructuredWordDocumentLoader(file_path, mode="elements")
-    else:
-        raise ValueError(f"Unsupported file type: {file_type}")
+    try:
+        if file_type == 'pdf':
+            loader = PyPDFLoader(file_path)
+        elif file_type in ['docx', 'doc']:
+            loader = UnstructuredWordDocumentLoader(file_path, mode="elements")
+        else:
+            raise ValueError(f"Unsupported file type: {file_type}")
 
-    all_documents.extend(loader.load())
+        all_documents.extend(loader.load())
 
-    if not all_documents:
-        raise HTTPException(status_code=500, detail="Could not load any content from the file.")
+        if not all_documents:
+            raise HTTPException(status_code=500, detail="Could not load any content from the file.")
 
-    # Split the Document into Chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        separators=["\n\n", "\n", " ", ""]
-    )
-    texts = text_splitter.split_documents(all_documents)
+        # Split the Document into Chunks
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", " ", ""]
+        )
+        texts = text_splitter.split_documents(all_documents)
 
-    # Use the same BGE embedding model
-    embeddings = HuggingFaceBgeEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        # Use the same BGE embedding model
+        embeddings = HuggingFaceBgeEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
-    # Create the FAISS vector store
-    vector_store = FAISS.from_documents(texts, embeddings)
-    
-    # Create the RAG Chain
-    llm = ChatGroq(model_name=rag_pipeline["llm_model"], temperature=0)
+        # Create the FAISS vector store
+        vector_store = FAISS.from_documents(texts, embeddings)
+        
+        # Create the RAG Chain
+        llm = ChatGroq(model_name=rag_pipeline["llm_model"], temperature=0)
 
-    system_prompt = (
-        "You are an expert Q&A assistant for the provided documents. "
-        "Use the following retrieved context to answer the user's question. "
-        "If you don't know the answer, just say that you don't know, and acknowledge that the answer is not in the document."
-        "\n\nContext: {context}"
-    )
-    
-    prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{input}")])
-    document_chain = create_stuff_documents_chain(llm, prompt)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
-    rag_chain = create_retrieval_chain(retriever, document_chain)
+        system_prompt = (
+            "You are an expert Q&A assistant for the provided documents. "
+            "Use the following retrieved context to answer the user's question. "
+            "If you don't know the answer, just say that you don't know, and acknowledge that the answer is not in the document."
+            "\n\nContext: {context}"
+        )
+        
+        prompt = ChatPromptTemplate.from_messages([("system", system_prompt), ("human", "{input}")])
+        document_chain = create_stuff_documents_chain(llm, prompt)
+        retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+        rag_chain = create_retrieval_chain(retriever, document_chain)
 
-    return rag_chain
+        return rag_chain
+
+    except Exception as e:
+        print(f"Error in process_and_index_file: {str(e)}")
+        raise
 
 # --- FastAPI Endpoints ---
 
 @app.get("/")
 async def root():
     """Root endpoint showing API status"""
-    return {"message": "EduSearch AI Backend API is running", "status": "healthy"}
+    return {
+        "message": "EduSearch AI Backend API is running", 
+        "status": "healthy",
+        "version": "1.0.0"
+    }
 
 @app.get("/health")
 async def health_check():
@@ -108,12 +121,15 @@ async def login_user(
     password: str = Form(...)
 ):
     """Handle user login."""
-    # Simple authentication (in production, use proper hashing and database)
-    user = users_db.get(username)
-    if user and user['password'] == password:
-        return {"success": True, "message": "Login successful"}
-    else:
-        return {"success": False, "error": "Invalid username or password"}
+    try:
+        # Simple authentication (in production, use proper hashing and database)
+        user = users_db.get(username)
+        if user and user['password'] == password:
+            return {"success": True, "message": "Login successful"}
+        else:
+            return {"success": False, "error": "Invalid username or password"}
+    except Exception as e:
+        return {"success": False, "error": f"Login error: {str(e)}"}
 
 @app.post("/signup")
 async def signup_user(
@@ -123,15 +139,18 @@ async def signup_user(
     password: str = Form(...)
 ):
     """Handle user registration."""
-    if username in users_db:
-        return {"success": False, "error": "Username already exists"}
-    
-    users_db[username] = {
-        'email': email,
-        'password': password  # In production, hash this password
-    }
-    
-    return {"success": True, "message": "Registration successful"}
+    try:
+        if username in users_db:
+            return {"success": False, "error": "Username already exists"}
+        
+        users_db[username] = {
+            'email': email,
+            'password': password  # In production, hash this password
+        }
+        
+        return {"success": True, "message": "Registration successful"}
+    except Exception as e:
+        return {"success": False, "error": f"Registration error: {str(e)}"}
 
 @app.post("/upload-file")
 async def upload_file_endpoint(file: UploadFile = File(...)):
@@ -164,17 +183,19 @@ async def upload_file_endpoint(file: UploadFile = File(...)):
 @app.post("/chat")
 async def chat_endpoint(query: dict):
     """Receives a text query and returns an answer using the current RAG chain."""
-    user_query = query.get("query")
-    if not user_query:
-        raise HTTPException(status_code=400, detail="Query text is required.")
-
-    if rag_pipeline["chain"] is None:
-        raise HTTPException(status_code=400, detail="No document has been uploaded and indexed yet. Please upload a file first.")
-
     try:
+        user_query = query.get("query")
+        if not user_query:
+            raise HTTPException(status_code=400, detail="Query text is required.")
+
+        if rag_pipeline["chain"] is None:
+            raise HTTPException(status_code=400, detail="No document has been uploaded and indexed yet. Please upload a file first.")
+
         response = rag_pipeline["chain"].invoke({"input": user_query})
         return {"query": user_query, "answer": response["answer"]}
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Chat Error: {e}")
         raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
