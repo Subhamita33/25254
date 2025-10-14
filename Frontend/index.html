@@ -1720,387 +1720,420 @@
     </div>
 
     <script>
-        // PDF content for download
-        const pdfContent = {
-            'Quantum_Computing_Future_of_Cryptography.pdf': `# Quantum Computing: The Future of Cryptography
+    // PDF content for download
+    const pdfContent = {
+        'Quantum_Computing_Future_of_Cryptography.pdf': `# Quantum Computing: The Future of Cryptography
 
 ## Abstract
 Quantum computing represents a paradigm shift in computation, leveraging the principles of quantum mechanics—superposition, entanglement, and quantum interference—to perform calculations beyond the reach of classical systems. This paper explores the potential impact of quantum computing on cryptography, examining threats to existing encryption standards, emerging post-quantum cryptographic schemes, and the future landscape of secure digital communication.`,
 
-            'Human_Computer_Interaction_and_UX_Design_Research.pdf': `# Human-Computer Interaction and UX Design Research
+        'Human_Computer_Interaction_and_UX_Design_Research.pdf': `# Human-Computer Interaction and UX Design Research
 
 ## Abstract
 Human–Computer Interaction (HCI) and User Experience (UX) Design together define how people engage with technology. This paper explores the evolution, methodologies, and emerging trends in HCI and UX research, focusing on the intersection of psychology, computer science, and design. It emphasizes user-centered design principles, usability evaluation, accessibility, and the growing role of AI-driven personalization in shaping the next generation of interactive systems.`,
 
-            'Data_Privacy_and_Cybersecurity_Research_Trends.pdf': `# Data Privacy and Cybersecurity Research Trends
+        'Data_Privacy_and_Cybersecurity_Research_Trends.pdf': `# Data Privacy and Cybersecurity Research Trends
 
 ## Abstract
 This paper explores evolving research directions in data privacy and cybersecurity amid the exponential growth of digital transformation. It examines challenges such as data breaches, surveillance capitalism, ransomware, and AI-driven attacks, while evaluating frameworks and technologies developed to counter them. Through an interdisciplinary lens, it highlights policy evolution, privacy-preserving computation, and ethical considerations shaping the future of digital security.`
-        };
+    };
 
-        // Function to download PDF
-        function downloadPDF(filename) {
-            const content = pdfContent[filename];
-            if (content) {
-                const blob = new Blob([content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
+    // BACKEND URL - UPDATE THIS WITH YOUR RENDER URL
+    const BACKEND_URL = 'https://two5254-1.onrender.com';
+
+    // Function to download PDF
+    function downloadPDF(filename) {
+        const content = pdfContent[filename];
+        if (content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
+    }
 
-        // Scroll animation for sections
-        document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('.section');
-            const featureCards = document.querySelectorAll('.feature-card');
-            const steps = document.querySelectorAll('.step');
-            const memberCards = document.querySelectorAll('.member-card');
-            const visualSteps = document.querySelectorAll('.visual-step');
-            
-            // Function to check if element is in viewport
-            function isInViewport(element) {
-                const rect = element.getBoundingClientRect();
-                return (
-                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
-                    rect.bottom >= 0
-                );
-            }
-            
-            // Function to handle scroll animations
-            function handleScrollAnimations() {
-                sections.forEach(section => {
-                    if (isInViewport(section)) {
-                        section.classList.add('visible');
-                    }
-                });
-                
-                featureCards.forEach(card => {
-                    if (isInViewport(card)) {
-                        card.classList.add('visible');
-                    }
-                });
-                
-                steps.forEach(step => {
-                    if (isInViewport(step)) {
-                        step.classList.add('visible');
-                    }
-                });
-                
-                memberCards.forEach(card => {
-                    if (isInViewport(card)) {
-                        card.classList.add('visible');
-                    }
-                });
-                
-                visualSteps.forEach(step => {
-                    if (isInViewport(step)) {
-                        step.classList.add('visible');
-                    }
-                });
-            }
-            
-            // Initial check on page load
-            handleScrollAnimations();
-            
-            // Check on scroll
-            window.addEventListener('scroll', handleScrollAnimations);
-            
-            // Get Started button functionality
-            const getStartedBtn = document.querySelector('.get-started-btn');
-            const authPage = document.getElementById('authPage');
-            const closeAuth = document.getElementById('closeAuth');
-            
-            getStartedBtn.addEventListener('click', function() {
-                authPage.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
+    // Scroll animation for sections
+    document.addEventListener('DOMContentLoaded', function() {
+        const sections = document.querySelectorAll('.section');
+        const featureCards = document.querySelectorAll('.feature-card');
+        const steps = document.querySelectorAll('.step');
+        const memberCards = document.querySelectorAll('.member-card');
+        const visualSteps = document.querySelectorAll('.visual-step');
+        
+        // Function to check if element is in viewport
+        function isInViewport(element) {
+            const rect = element.getBoundingClientRect();
+            return (
+                rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+                rect.bottom >= 0
+            );
+        }
+        
+        // Function to handle scroll animations
+        function handleScrollAnimations() {
+            sections.forEach(section => {
+                if (isInViewport(section)) {
+                    section.classList.add('visible');
+                }
             });
             
-            closeAuth.addEventListener('click', function() {
+            featureCards.forEach(card => {
+                if (isInViewport(card)) {
+                    card.classList.add('visible');
+                }
+            });
+            
+            steps.forEach(step => {
+                if (isInViewport(step)) {
+                    step.classList.add('visible');
+                }
+            });
+            
+            memberCards.forEach(card => {
+                if (isInViewport(card)) {
+                    card.classList.add('visible');
+                }
+            });
+            
+            visualSteps.forEach(step => {
+                if (isInViewport(step)) {
+                    step.classList.add('visible');
+                }
+            });
+        }
+        
+        // Initial check on page load
+        handleScrollAnimations();
+        
+        // Check on scroll
+        window.addEventListener('scroll', handleScrollAnimations);
+        
+        // Get Started button functionality
+        const getStartedBtn = document.querySelector('.get-started-btn');
+        const authPage = document.getElementById('authPage');
+        const closeAuth = document.getElementById('closeAuth');
+        
+        getStartedBtn.addEventListener('click', function() {
+            authPage.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeAuth.addEventListener('click', function() {
+            authPage.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Close auth when clicking outside the container
+        authPage.addEventListener('click', function(e) {
+            if (e.target === authPage) {
                 authPage.style.display = 'none';
                 document.body.style.overflow = 'auto';
-            });
+            }
+        });
+        
+        // Authentication Toggle Logic
+        const authContainer = document.getElementById('authContainer');
+        const SignUpBtn = document.querySelector('.SignUp-btn');
+        const loginToggleBtn = document.querySelector('.login-btn');
+        
+        SignUpBtn.addEventListener('click', () => {
+            authContainer.classList.add('active');
+        });
+        
+        loginToggleBtn.addEventListener('click', () => {
+            authContainer.classList.remove('active');
+        });
+        
+        // Authentication Logic - UPDATED WITH CORRECT BACKEND URL
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const chatContainer = document.getElementById('chatContainer');
+        const closeChat = document.getElementById('closeChat');
+        
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
             
-            // Close auth when clicking outside the container
-            authPage.addEventListener('click', function(e) {
-                if (e.target === authPage) {
-                    authPage.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                }
-            });
-            
-            // Authentication Toggle Logic
-            const authContainer = document.getElementById('authContainer');
-            const SignUpBtn = document.querySelector('.SignUp-btn');
-            const loginToggleBtn = document.querySelector('.login-btn');
-            
-            SignUpBtn.addEventListener('click', () => {
-                authContainer.classList.add('active');
-            });
-            
-            loginToggleBtn.addEventListener('click', () => {
-                authContainer.classList.remove('active');
-            });
-            
-            // Authentication Logic - UPDATED WITH BACKEND INTEGRATION
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
-            const loginError = document.getElementById('loginError');
-            const signupError = document.getElementById('signupError');
-            const chatContainer = document.getElementById('chatContainer');
-            const closeChat = document.getElementById('closeChat');
-            
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const username = document.getElementById('loginUsername').value;
-                const password = document.getElementById('loginPassword').value;
+            try {
+                console.log('Attempting login to:', `${BACKEND_URL}/login`);
                 
-                try {
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        // Successful login - show chat interface
-                        authPage.style.display = 'none';
-                        chatContainer.style.display = 'flex';
-                        loginError.style.display = 'none';
-                        document.body.style.overflow = 'hidden';
-                    } else {
-                        loginError.textContent = data.error;
-                        loginError.style.display = 'block';
-                    }
-                } catch (error) {
-                    loginError.textContent = 'Network error during login';
+                const response = await fetch(`${BACKEND_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.success) {
+                    // Successful login - show chat interface
+                    authPage.style.display = 'none';
+                    chatContainer.style.display = 'flex';
+                    loginError.style.display = 'none';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    loginError.textContent = data.error || 'Login failed';
                     loginError.style.display = 'block';
                 }
-            });
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.textContent = 'Network error during login. Please check your connection.';
+                loginError.style.display = 'block';
+            }
+        });
+        
+        signupForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
             
-            signupForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const username = document.getElementById('signupUsername').value;
-                const email = document.getElementById('signupEmail').value;
-                const password = document.getElementById('signupPassword').value;
+            try {
+                console.log('Attempting signup to:', `${BACKEND_URL}/signup`);
                 
-                try {
-                    const response = await fetch('/signup', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-                    });
+                const response = await fetch(`${BACKEND_URL}/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+                });
+                
+                const data = await response.json();
+                console.log('Signup response:', data);
+                
+                if (data.success) {
+                    // Switch to login form
+                    authContainer.classList.remove('active');
+                    signupError.style.display = 'none';
                     
-                    const data = await response.json();
+                    // Clear form
+                    document.getElementById('signupUsername').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
                     
-                    if (data.success) {
-                        // Switch to login form
-                        authContainer.classList.remove('active');
-                        signupError.style.display = 'none';
-                        
-                        // Clear form
-                        document.getElementById('signupUsername').value = '';
-                        document.getElementById('signupEmail').value = '';
-                        document.getElementById('signupPassword').value = '';
-                        
-                        alert('Registration successful! Please login with your credentials.');
-                    } else {
-                        signupError.textContent = data.error;
-                        signupError.style.display = 'block';
-                    }
-                } catch (error) {
-                    signupError.textContent = 'Network error during registration';
+                    alert('Registration successful! Please login with your credentials.');
+                } else {
+                    signupError.textContent = data.error || 'Registration failed';
                     signupError.style.display = 'block';
                 }
-            });
-            
-            // Close chat interface
-            closeChat.addEventListener('click', function() {
-                chatContainer.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            });
-            
-            // Chat Interface Logic - UPDATED WITH BACKEND INTEGRATION
-            const uploadForm = document.getElementById('upload-form');
-            const queryForm = document.getElementById('query-form');
-            const chatWindow = document.getElementById('chat-window');
-            const uploadStatus = document.getElementById('upload-status');
-            const sendButton = document.getElementById('send-button');
-            const statusIndicator = document.getElementById('status-indicator');
-            const queryInput = document.getElementById('query-input');
+            } catch (error) {
+                console.error('Signup error:', error);
+                signupError.textContent = 'Network error during registration. Please check your connection.';
+                signupError.style.display = 'block';
+            }
+        });
+        
+        // Close chat interface
+        closeChat.addEventListener('click', function() {
+            chatContainer.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Chat Interface Logic - UPDATED WITH CORRECT BACKEND URL
+        const uploadForm = document.getElementById('upload-form');
+        const queryForm = document.getElementById('query-form');
+        const chatWindow = document.getElementById('chat-window');
+        const uploadStatus = document.getElementById('upload-status');
+        const sendButton = document.getElementById('send-button');
+        const statusIndicator = document.getElementById('status-indicator');
+        const queryInput = document.getElementById('query-input');
 
-            // Apply 'active' class to keep the chat interface visible
-            document.querySelector('#chatContainer .auth-container').classList.add('active');
+        // Apply 'active' class to keep the chat interface visible
+        document.querySelector('#chatContainer .auth-container').classList.add('active');
 
-            // --- Chat Display Utility ---
-            function appendMessage(sender, text) {
-                // Remove welcome message if it exists
-                const welcomeMsg = chatWindow.querySelector('.welcome-message');
-                if (welcomeMsg) {
-                    welcomeMsg.remove();
-                }
-
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `message ${sender}`;
-
-                let senderName = sender === 'user' ? 'YOU' : 'AI';
-                let icon = sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
-                let iconColor = sender === 'user' ? '#7494ec' : '#28a745';
-
-                msgDiv.innerHTML = `
-                    <strong style="color: ${iconColor};">
-                        <i class="${icon}" style="margin-right: 6px;"></i>${senderName}
-                    </strong>
-                    <div style="color: #333; font-size: 14px; line-height: 1.5;">${text.replace(/\n/g, '<br>')}</div>
-                `;
-
-                chatWindow.appendChild(msgDiv);
-                chatWindow.scrollTop = chatWindow.scrollHeight;
+        // --- Chat Display Utility ---
+        function appendMessage(sender, text) {
+            // Remove welcome message if it exists
+            const welcomeMsg = chatWindow.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
             }
 
-            // --- File Upload Logic - UPDATED WITH BACKEND INTEGRATION ---
-            uploadForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const fileInput = document.getElementById('file-input');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender}`;
+
+            let senderName = sender === 'user' ? 'YOU' : 'AI';
+            let icon = sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
+            let iconColor = sender === 'user' ? '#7494ec' : '#28a745';
+
+            msgDiv.innerHTML = `
+                <strong style="color: ${iconColor};">
+                    <i class="${icon}" style="margin-right: 6px;"></i>${senderName}
+                </strong>
+                <div style="color: #333; font-size: 14px; line-height: 1.5;">${text.replace(/\n/g, '<br>')}</div>
+            `;
+
+            chatWindow.appendChild(msgDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // --- File Upload Logic - UPDATED WITH CORRECT BACKEND URL ---
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('file-input');
+            
+            if (!fileInput.files[0]) {
+                uploadStatus.textContent = 'Please select a file first.';
+                uploadStatus.style.color = '#e74c3c';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing document...';
+            uploadStatus.style.color = '#7494ec';
+
+            try {
+                console.log('Uploading file to:', `${BACKEND_URL}/upload-file`);
                 
-                if (!fileInput.files[0]) {
-                    uploadStatus.textContent = 'Please select a file first.';
-                    uploadStatus.style.color = '#e74c3c';
-                    return;
-                }
+                const response = await fetch(`${BACKEND_URL}/upload-file`, {
+                    method: 'POST',
+                    body: formData,
+                });
 
-                const formData = new FormData();
-                formData.append('file', fileInput.files[0]);
+                const data = await response.json();
+                console.log('Upload response:', data);
 
-                uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing document...';
-                uploadStatus.style.color = '#7494ec';
-
-                try {
-                    const response = await fetch('/upload-file', {
-                        method: 'POST',
-                        body: formData,
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
-                        uploadStatus.style.color = '#27ae60';
-                        
-                        // Clear any existing messages and show success message
-                        const welcomeMsg = chatWindow.querySelector('.welcome-message');
-                        if (welcomeMsg) welcomeMsg.remove();
-                        
-                        appendMessage('ai', `✅ Document "${fileInput.files[0].name}" has been successfully processed! You can now ask questions about its content.`);
-                        
-                        // Enable query input
-                        queryInput.disabled = false;
-                        queryInput.placeholder = "Ask a question about the document...";
-                        
-                    } else {
-                        uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.detail}`;
-                        uploadStatus.style.color = '#e74c3c';
-                    }
-                } catch (error) {
-                    uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload.';
-                    uploadStatus.style.color = '#e74c3c';
-                }
-            });
-
-            // --- Query Logic - UPDATED WITH BACKEND INTEGRATION ---
-            queryForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const question = queryInput.value.trim();
-
-                if (!question) return;
-
-                // Display user question
-                appendMessage('user', question);
-                queryInput.value = '';
-                queryInput.disabled = true;
-                sendButton.disabled = true;
-                statusIndicator.style.display = 'block';
-
-                try {
-                    const response = await fetch('/chat', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ query: question }),
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        appendMessage('ai', data.answer);
-                    } else {
-                        appendMessage('ai', `❌ ${data.detail || 'Failed to get answer. Please try again.'}`);
-                    }
-                } catch (error) {
-                    appendMessage('ai', '❌ Network error while processing your question. Please check your connection.');
-                } finally {
+                if (response.ok) {
+                    uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
+                    uploadStatus.style.color = '#27ae60';
+                    
+                    // Clear any existing messages and show success message
+                    const welcomeMsg = chatWindow.querySelector('.welcome-message');
+                    if (welcomeMsg) welcomeMsg.remove();
+                    
+                    appendMessage('ai', `✅ Document "${fileInput.files[0].name}" has been successfully processed! You can now ask questions about its content.`);
+                    
+                    // Enable query input
                     queryInput.disabled = false;
-                    sendButton.disabled = false;
-                    statusIndicator.style.display = 'none';
+                    queryInput.placeholder = "Ask a question about the document...";
+                    
+                } else {
+                    uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.detail || 'Upload failed'}`;
+                    uploadStatus.style.color = '#e74c3c';
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload. Please check your connection.';
+                uploadStatus.style.color = '#e74c3c';
+            }
+        });
+
+        // --- Query Logic - UPDATED WITH CORRECT BACKEND URL ---
+        queryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = queryInput.value.trim();
+
+            if (!question) return;
+
+            // Display user question
+            appendMessage('user', question);
+            queryInput.value = '';
+            queryInput.disabled = true;
+            sendButton.disabled = true;
+            statusIndicator.style.display = 'block';
+
+            try {
+                console.log('Sending query to:', `${BACKEND_URL}/chat`);
+                
+                const response = await fetch(`${BACKEND_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: question }),
+                });
+
+                const data = await response.json();
+                console.log('Chat response:', data);
+
+                if (response.ok) {
+                    appendMessage('ai', data.answer);
+                } else {
+                    appendMessage('ai', `❌ ${data.detail || 'Failed to get answer. Please try again.'}`);
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                appendMessage('ai', '❌ Network error while processing your question. Please check your connection.');
+            } finally {
+                queryInput.disabled = false;
+                sendButton.disabled = false;
+                statusIndicator.style.display = 'none';
+                queryInput.focus();
+            }
+        });
+
+        // Enable query input when page loads (will be disabled until document is uploaded)
+        queryInput.disabled = true;
+        queryInput.placeholder = "Please upload a document first...";
+
+        // Add some interactivity to file input
+        const fileInput = document.getElementById('file-input');
+        fileInput.addEventListener('change', function() {
+            if (this.files[0]) {
+                const fileName = this.files[0].name;
+                uploadStatus.textContent = `Selected: ${fileName}`;
+                uploadStatus.style.color = '#27ae60';
+            }
+        });
+
+        // Auto-focus on query input when it becomes enabled
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (!queryInput.disabled) {
                     queryInput.focus();
                 }
             });
-
-            // Enable query input when page loads (will be disabled until document is uploaded)
-            queryInput.disabled = true;
-            queryInput.placeholder = "Please upload a document first...";
-
-            // Add some interactivity to file input
-            const fileInput = document.getElementById('file-input');
-            fileInput.addEventListener('change', function() {
-                if (this.files[0]) {
-                    const fileName = this.files[0].name;
-                    uploadStatus.textContent = `Selected: ${fileName}`;
-                    uploadStatus.style.color = '#27ae60';
-                }
-            });
-
-            // Auto-focus on query input when it becomes enabled
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (!queryInput.disabled) {
-                        queryInput.focus();
-                    }
+        });
+        
+        observer.observe(queryInput, { attributes: true, attributeFilter: ['disabled'] });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
                 });
-            });
-            
-            observer.observe(queryInput, { attributes: true, attributeFilter: ['disabled'] });
-            
-            // Smooth scrolling for navigation links
-            document.querySelectorAll('nav a').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    document.querySelector(targetId).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
-            
-            // Search functionality for demonstration
-            document.querySelector('.search-container button').addEventListener('click', function() {
-                const query = document.querySelector('.search-container input').value;
-                if (query.trim() !== '') {
-                    alert(`Searching for: "${query}"\n\nIn a full implementation, this would trigger the AI retrieval process.`);
-                }
             });
         });
-    </script>
+        
+        // Search functionality for demonstration
+        document.querySelector('.search-container button').addEventListener('click', function() {
+            const query = document.querySelector('.search-container input').value;
+            if (query.trim() !== '') {
+                alert(`Searching for: "${query}"\n\nIn a full implementation, this would trigger the AI retrieval process.`);
+            }
+        });
+
+        // Test backend connection on page load
+        async function testBackendConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`);
+                const data = await response.json();
+                console.log('Backend connection test:', data);
+            } catch (error) {
+                console.error('Backend connection failed:', error);
+            }
+        }
+        
+        // Test connection when page loads
+        testBackendConnection();
+    });
+</script>
 </body>
 </html>
