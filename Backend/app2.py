@@ -1,11 +1,8 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import shutil
-import tempfile
-from typing import Dict
 import uvicorn
 from dotenv import load_dotenv
 
@@ -18,82 +15,50 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware - allow all for now
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:8000", 
-        "https://your-netlify-app.netlify.app",  # Replace with your Netlify URL
-        "https://*.netlify.app"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Check for GROQ API key
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    print("Warning: GROQ_API_KEY not found. Some features may not work.")
+# Simple in-memory storage
+users_db = {}
+uploaded_files = []
 
-# Simple user storage
-users_db: Dict[str, dict] = {}
-
-# Request models
 class ChatRequest(BaseModel):
     query: str
-
-# Basic RAG components (will be initialized on first use)
-rag_components = {
-    "vector_store": None,
-    "llm": None,
-    "retriever": None
-}
-
-def initialize_rag_components():
-    """Initialize RAG components only when needed"""
-    try:
-        from langchain_groq import ChatGroq
-        from langchain_community.vectorstores import FAISS
-        from sentence_transformers import SentenceTransformer
-        
-        if rag_components["llm"] is None and GROQ_API_KEY:
-            rag_components["llm"] = ChatGroq(
-                model_name="llama-3.1-8b-instant",
-                temperature=0,
-                groq_api_key=GROQ_API_KEY
-            )
-        return True
-    except ImportError as e:
-        print(f"RAG components not available: {e}")
-        return False
 
 @app.get("/")
 async def root():
     return {
-        "message": "EduSearch AI Backend API is running", 
+        "message": "EduSearch AI Backend API is running successfully!", 
         "status": "healthy",
-        "version": "1.0.0",
-        "rag_available": GROQ_API_KEY is not None
+        "version": "1.0.0"
     }
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "message": "EduSearch AI Backend is running"}
+    return {"status": "healthy", "message": "Backend is running"}
 
 @app.post("/login")
 async def login_user(
     username: str = Form(...),
     password: str = Form(...)
 ):
-    """Handle user login."""
+    """Simple login - accepts any credentials for demo"""
     try:
-        user = users_db.get(username)
-        if user and user['password'] == password:
-            return {"success": True, "message": "Login successful"}
+        # For demo, accept any login
+        if username and password:
+            return {
+                "success": True, 
+                "message": "Login successful",
+                "user": username
+            }
         else:
-            return {"success": False, "error": "Invalid username or password"}
+            return {"success": False, "error": "Username and password required"}
     except Exception as e:
         return {"success": False, "error": f"Login error: {str(e)}"}
 
@@ -103,83 +68,78 @@ async def signup_user(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    """Handle user registration."""
+    """Simple signup - always succeeds for demo"""
     try:
-        if username in users_db:
-            return {"success": False, "error": "Username already exists"}
-        
         users_db[username] = {
             'email': email,
             'password': password
         }
         
-        return {"success": True, "message": "Registration successful"}
+        return {
+            "success": True, 
+            "message": "Registration successful",
+            "user": username
+        }
     except Exception as e:
         return {"success": False, "error": f"Registration error: {str(e)}"}
 
 @app.post("/upload-file")
 async def upload_file_endpoint(file: UploadFile = File(...)):
-    """Receives an uploaded file and processes it."""
-    file_extension = file.filename.split(".")[-1].lower()
-    
-    if file_extension not in ['pdf', 'docx', 'doc']:
-        raise HTTPException(status_code=400, detail="Only PDF, DOCX, and DOC files are supported.")
-    
-    # For demo purposes, we'll just acknowledge the upload
-    # In a full implementation, this would process the file with RAG
+    """Accept file upload - store filename for demo"""
     try:
-        # Initialize RAG components if available
-        rag_available = initialize_rag_components()
+        # Just store the filename for demo
+        uploaded_files.append({
+            "filename": file.filename,
+            "size": "demo",
+            "uploaded_at": "now"
+        })
         
-        if rag_available:
-            return {
-                "message": f"File '{file.filename}' uploaded successfully. RAG processing available.",
-                "processed": True
-            }
-        else:
-            return {
-                "message": f"File '{file.filename}' uploaded successfully. Basic mode active.",
-                "processed": False,
-                "note": "RAG features require GROQ_API_KEY environment variable"
-            }
-            
+        return {
+            "success": True,
+            "message": f"File '{file.filename}' uploaded successfully (demo mode)",
+            "files_count": len(uploaded_files)
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+        return {"success": False, "error": f"Upload error: {str(e)}"}
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    """Handle chat queries with RAG if available, otherwise basic responses."""
+    """Simple chat response for demo"""
     try:
         user_query = request.query
         
         if not user_query:
-            raise HTTPException(status_code=400, detail="Query text is required.")
+            return {"success": False, "error": "Query is required"}
         
-        # Try to use RAG if available
-        rag_available = initialize_rag_components()
-        
-        if rag_available and rag_components["llm"]:
-            try:
-                # Simple direct response without RAG for now
-                response = f"I received your question: '{user_query}'. In a full implementation, this would search through uploaded documents using RAG technology."
-                return {"query": user_query, "answer": response}
-            except Exception as e:
-                # Fallback to basic response
-                return {
-                    "query": user_query, 
-                    "answer": f"Basic response to: {user_query}. RAG processing is currently being initialized.",
-                    "note": "RAG features are starting up, please try again in a moment."
-                }
+        # Demo responses based on query
+        if "scholarship" in user_query.lower():
+            response = "Based on available documents, scholarship eligibility typically requires: 1) Academic performance above 75%, 2) Family income below specified limits, 3) Admission to recognized institutions. Please check specific scholarship guidelines for detailed criteria."
+        elif "admission" in user_query.lower():
+            response = "Admission processes vary by institution. Common requirements include: entrance exam scores, academic transcripts, and application forms. Refer to individual university guidelines for specific admission procedures."
+        elif "regulation" in user_query.lower():
+            response = "Higher education regulations cover areas like curriculum standards, faculty qualifications, infrastructure requirements, and student welfare. Specific regulations depend on the governing bodies and institution types."
         else:
-            # Basic response when RAG is not available
-            return {
-                "query": user_query,
-                "answer": f"I received your question: '{user_query}'. This is running in basic mode. To enable full RAG capabilities, please ensure GROQ_API_KEY is properly configured.",
-                "mode": "basic"
-            }
-            
+            response = f"I understand you're asking about: '{user_query}'. In a full implementation, this would search through uploaded higher education documents using AI technology. Currently running in demo mode."
+        
+        return {
+            "success": True,
+            "query": user_query,
+            "answer": response,
+            "mode": "demo"
+        }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+        return {"success": False, "error": f"Chat error: {str(e)}"}
+
+@app.get("/status")
+async def get_status():
+    """Get current system status"""
+    return {
+        "users_count": len(users_db),
+        "files_uploaded": len(uploaded_files),
+        "status": "operational",
+        "mode": "demo"
+    }
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
