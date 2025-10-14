@@ -2150,7 +2150,28 @@ uploadForm.addEventListener('submit', async (e) => {
                 console.error('Backend connection failed:', error);
             }
         }
+        // Function to check RAG status
+async function checkRAGStatus() {
+    try {
+        const response = await fetch(`${BACKEND_URL}/status`);
+        const data = await response.json();
+        console.log('RAG Status:', data);
         
+        if (data.rag_available) {
+            console.log('✅ RAG is available and configured');
+        } else {
+            console.log('⚠️ RAG is not available - running in demo mode');
+            if (!data.groq_configured) {
+                console.log('❌ GROQ_API_KEY is not configured');
+            }
+        }
+    } catch (error) {
+        console.error('Failed to check RAG status:', error);
+    }
+}
+
+// Call this when page loads
+checkRAGStatus();
         // Test connection when page loads
         testBackendConnection();
     });
