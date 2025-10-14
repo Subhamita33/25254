@@ -3,7 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import os
+import tempfile
+import shutil
 from typing import Dict
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI(
     title="EduSearch AI Backend",
@@ -11,28 +17,141 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware - allow all origins for now
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for testing
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Check for GROQ API key
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    print("Warning: GROQ_API_KEY not found. Running in demo mode.")
+
 # Simple in-memory storage
 users_db: Dict[str, dict] = {}
 uploaded_files = []
+current_document = None
 
 class ChatRequest(BaseModel):
     query: str
+
+# RAG Components
+def initialize_rag_components():
+    """Initialize RAG components only when needed"""
+    try:
+        from langchain_groq import ChatGroq
+        from langchain_community.document_loaders import PyPDFLoader
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from langchain_community.vectorstores import FAISS
+        from langchain_huggingface import HuggingFaceEmbeddings
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain.chains.combine_documents import create_stuff_documents_chain
+        from langchain.chains import create_retrieval_chain
+        
+        return {
+            'ChatGroq': ChatGroq,
+            'PyPDFLoader': PyPDFLoader,
+            'RecursiveCharacterTextSplitter': RecursiveCharacterTextSplitter,
+            'FAISS': FAISS,
+            'HuggingFaceEmbeddings': HuggingFaceEmbeddings,
+            'ChatPromptTemplate': ChatPromptTemplate,
+            'create_stuff_documents_chain': create_stuff_documents_chain,
+            'create_retrieval_chain': create_retrieval_chain
+        }
+    except ImportError as e:
+        print(f"RAG components not available: {e}")
+        return None
+
+rag_components = initialize_rag_components()
+rag_chain = None
+
+def process_document_with_rag(file_path: str):
+    """Process document using RAG pipeline"""
+    global rag_chain
+    
+    if not rag_components or not GROQ_API_KEY:
+        return {"success": False, "error": "RAG components not available"}
+    
+    try:
+        # Load document
+        loader = rag_components['PyPDFLoader'](file_path)
+        documents = loader.load()
+        
+        if not documents:
+            return {"success": False, "error": "Could not extract content from document"}
+        
+        # Split documents
+        text_splitter = rag_components['RecursiveCharacterTextSplitter'](
+            chunk_size=1000,
+            chunk_overlap=200,
+            length_function=len,
+        )
+        texts = text_splitter.split_documents(documents)
+        
+        # Create embeddings
+        embeddings = rag_components['HuggingFaceEmbeddings'](
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+        
+        # Create vector store
+        vectorstore = rag_components['FAISS'].from_documents(texts, embeddings)
+        
+        # Create LLM
+        llm = rag_components['ChatGroq'](
+            groq_api_key=GROQ_API_KEY,
+            model_name="llama-3.1-8b-instant",
+            temperature=0
+        )
+        
+        # Create retrieval chain
+        prompt = rag_components['ChatPromptTemplate'].from_template("""
+        You are an expert assistant for higher education documents. Use the following context to answer the question.
+        If you don't know the answer based on the context, say you don't know. Don't make up information.
+        
+        Context: {context}
+        
+        Question: {input}
+        
+        Answer:
+        """)
+        
+        document_chain = rag_components['create_stuff_documents_chain'](llm, prompt)
+        retriever = vectorstore.as_retriever()
+        rag_chain = rag_components['create_retrieval_chain'](retriever, document_chain)
+        
+        return {"success": True, "message": "Document processed with RAG"}
+        
+    except Exception as e:
+        return {"success": False, "error": f"RAG processing failed: {str(e)}"}
+
+def get_rag_response(query: str):
+    """Get response from RAG chain"""
+    global rag_chain
+    
+    if not rag_chain:
+        return {"success": False, "error": "No document has been processed yet"}
+    
+    try:
+        response = rag_chain.invoke({"input": query})
+        return {
+            "success": True,
+            "answer": response["answer"],
+            "source": "RAG"
+        }
+    except Exception as e:
+        return {"success": False, "error": f"RAG response failed: {str(e)}"}
 
 @app.get("/")
 async def root():
     return {
         "message": "EduSearch AI Backend API is running!", 
         "status": "healthy",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "rag_available": rag_components is not None and GROQ_API_KEY is not None
     }
 
 @app.get("/health")
@@ -40,117 +159,116 @@ async def health_check():
     return {"status": "healthy", "message": "Backend is running"}
 
 @app.post("/login")
-async def login_user(
-    username: str = Form(...),
-    password: str = Form(...)
-):
-    """Handle user login - accepts any credentials for demo"""
-    try:
-        # For demo purposes, accept any login
-        if username and password:
-            return {
-                "success": True, 
-                "message": "Login successful",
-                "user": username
-            }
-        else:
-            return {"success": False, "error": "Username and password required"}
-    except Exception as e:
-        return {"success": False, "error": f"Login error: {str(e)}"}
+async def login_user(username: str = Form(...), password: str = Form(...)):
+    if username and password:
+        return {"success": True, "message": "Login successful", "user": username}
+    return {"success": False, "error": "Username and password required"}
 
 @app.post("/signup")
-async def signup_user(
-    username: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...)
-):
-    """Handle user registration - always succeeds for demo"""
-    try:
-        if username in users_db:
-            return {"success": False, "error": "Username already exists"}
-        
-        users_db[username] = {
-            'email': email,
-            'password': password
-        }
-        
-        return {
-            "success": True, 
-            "message": "Registration successful",
-            "user": username
-        }
-    except Exception as e:
-        return {"success": False, "error": f"Registration error: {str(e)}"}
+async def signup_user(username: str = Form(...), email: str = Form(...), password: str = Form(...)):
+    if username in users_db:
+        return {"success": False, "error": "Username already exists"}
+    
+    users_db[username] = {'email': email, 'password': password}
+    return {"success": True, "message": "Registration successful", "user": username}
 
 @app.post("/upload-file")
 async def upload_file_endpoint(file: UploadFile = File(...)):
-    """Handle file uploads - accepts any file for demo"""
     try:
-        print(f"Received file upload: {file.filename}, Content-Type: {file.content_type}")
+        print(f"Received file: {file.filename}")
         
         # Check file type
-        allowed_types = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword']
-        if file.content_type not in allowed_types:
+        if not file.filename.lower().endswith(('.pdf', '.docx', '.doc')):
             return {
                 "success": False,
-                "error": f"File type {file.content_type} not supported. Please upload PDF, DOCX, or DOC files."
+                "error": "Only PDF, DOCX, and DOC files are supported"
             }
         
-        # Read file content (for demo, we just get the size)
-        content = await file.read()
-        file_size = len(content)
+        # Save file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+            shutil.copyfileobj(file.file, tmp_file)
+            tmp_path = tmp_file.name
         
-        # Store file info
+        # Process with RAG if available
+        if rag_components and GROQ_API_KEY:
+            result = process_document_with_rag(tmp_path)
+            if result["success"]:
+                uploaded_files.append({
+                    "filename": file.filename,
+                    "processed": True,
+                    "method": "RAG"
+                })
+                
+                # Clean up temp file
+                os.unlink(tmp_path)
+                
+                return {
+                    "success": True,
+                    "message": f"File '{file.filename}' processed with RAG successfully!",
+                    "method": "RAG"
+                }
+            else:
+                # If RAG fails, fall back to demo mode
+                print(f"RAG processing failed: {result['error']}")
+        
+        # Fallback to demo mode
         uploaded_files.append({
             "filename": file.filename,
-            "content_type": file.content_type,
-            "size": file_size,
-            "uploaded_at": "now"
+            "processed": True,
+            "method": "Demo"
         })
         
-        print(f"File processed successfully: {file.filename}, Size: {file_size} bytes")
+        # Clean up temp file
+        if os.path.exists(tmp_path):
+            os.unlink(tmp_path)
         
         return {
             "success": True,
-            "message": f"File '{file.filename}' uploaded and processed successfully!",
-            "file_info": {
-                "filename": file.filename,
-                "size": file_size,
-                "type": file.content_type
-            }
+            "message": f"File '{file.filename}' uploaded successfully (Demo mode)",
+            "method": "Demo"
         }
         
     except Exception as e:
-        print(f"Upload error: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Error processing file: {str(e)}"
-        }
+        return {"success": False, "error": f"Upload error: {str(e)}"}
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    """Handle chat queries"""
     try:
         user_query = request.query
         
         if not user_query:
             return {"success": False, "error": "Query is required"}
         
-        # Demo responses
+        # Try RAG first if available and document is processed
+        if rag_chain:
+            rag_response = get_rag_response(user_query)
+            if rag_response["success"]:
+                return {
+                    "success": True,
+                    "query": user_query,
+                    "answer": rag_response["answer"],
+                    "source": "RAG",
+                    "method": "AI-Powered RAG"
+                }
+        
+        # Fallback to demo responses
         if "scholarship" in user_query.lower():
-            response = "Based on available documents, scholarship eligibility typically requires: 1) Academic performance above 75%, 2) Family income below specified limits, 3) Admission to recognized institutions. Please check specific scholarship guidelines for detailed criteria."
+            response = "Based on higher education documents, scholarship eligibility typically requires: 1) Academic performance above 75%, 2) Family income below ₹8 lakhs per annum, 3) Admission to recognized institutions, 4) No other concurrent scholarship benefits."
         elif "admission" in user_query.lower():
-            response = "Admission processes vary by institution. Common requirements include: entrance exam scores, academic transcripts, and application forms. Refer to individual university guidelines for specific admission procedures."
+            response = "Admission processes include: entrance exam scores, academic transcripts, application forms, and sometimes interviews. Specific requirements vary by institution and program type."
         elif "regulation" in user_query.lower():
-            response = "Higher education regulations cover areas like curriculum standards, faculty qualifications, infrastructure requirements, and student welfare. Specific regulations depend on the governing bodies and institution types."
+            response = "Higher education regulations cover curriculum standards, faculty qualifications, infrastructure requirements, research guidelines, and student welfare policies as per UGC and AICTE guidelines."
+        elif "summary" in user_query.lower() or "summarize" in user_query.lower():
+            response = "I would provide a comprehensive summary of the uploaded document here. In demo mode, I can give general information about higher education topics."
         else:
-            response = f"I understand you're asking about: '{user_query}'. In a full implementation, this would search through uploaded higher education documents using RAG technology. Currently running in demo mode."
+            response = f"I understand you're asking about: '{user_query}'. Based on the uploaded document, I would provide specific information. Currently running in demo mode with general higher education knowledge."
         
         return {
             "success": True,
             "query": user_query,
             "answer": response,
-            "mode": "demo"
+            "source": "Demo",
+            "method": "Demo Mode"
         }
         
     except Exception as e:
@@ -158,13 +276,12 @@ async def chat_endpoint(request: ChatRequest):
 
 @app.get("/status")
 async def get_status():
-    """Get current system status"""
     return {
         "users_count": len(users_db),
         "files_uploaded": len(uploaded_files),
-        "uploaded_files": uploaded_files,
-        "status": "operational",
-        "mode": "demo"
+        "rag_available": rag_components is not None and GROQ_API_KEY is not None,
+        "groq_configured": GROQ_API_KEY is not None,
+        "status": "operational"
     }
 
 if __name__ == "__main__":
