@@ -1980,57 +1980,77 @@ This paper explores evolving research directions in data privacy and cybersecuri
         }
 
         // --- File Upload Logic - UPDATED WITH CORRECT BACKEND URL ---
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('file-input');
-            
-            if (!fileInput.files[0]) {
-                uploadStatus.textContent = 'Please select a file first.';
-                uploadStatus.style.color = '#e74c3c';
-                return;
-            }
+       // --- File Upload Logic - UPDATED WITH PROPER ERROR HANDLING ---
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById('file-input');
+    
+    if (!fileInput.files[0]) {
+        uploadStatus.textContent = 'Please select a file first.';
+        uploadStatus.style.color = '#e74c3c';
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
+    const file = fileInput.files[0];
+    
+    // Validate file type
+    const allowedTypes = ['application/pdf', 
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
+                         'application/msword'];
+    
+    if (!allowedTypes.includes(file.type)) {
+        uploadStatus.textContent = 'Please select a PDF, DOCX, or DOC file.';
+        uploadStatus.style.color = '#e74c3c';
+        return;
+    }
 
-            uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing document...';
-            uploadStatus.style.color = '#7494ec';
+    const formData = new FormData();
+    formData.append('file', file);
 
-            try {
-                console.log('Uploading file to:', `${BACKEND_URL}/upload-file`);
-                
-                const response = await fetch(`${BACKEND_URL}/upload-file`, {
-                    method: 'POST',
-                    body: formData,
-                });
+    uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Uploading and processing document...';
+    uploadStatus.style.color = '#7494ec';
 
-                const data = await response.json();
-                console.log('Upload response:', data);
-
-                if (response.ok) {
-                    uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
-                    uploadStatus.style.color = '#27ae60';
-                    
-                    // Clear any existing messages and show success message
-                    const welcomeMsg = chatWindow.querySelector('.welcome-message');
-                    if (welcomeMsg) welcomeMsg.remove();
-                    
-                    appendMessage('ai', `✅ Document "${fileInput.files[0].name}" has been successfully processed! You can now ask questions about its content.`);
-                    
-                    // Enable query input
-                    queryInput.disabled = false;
-                    queryInput.placeholder = "Ask a question about the document...";
-                    
-                } else {
-                    uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.detail || 'Upload failed'}`;
-                    uploadStatus.style.color = '#e74c3c';
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload. Please check your connection.';
-                uploadStatus.style.color = '#e74c3c';
-            }
+    try {
+        console.log('Uploading file to:', `${BACKEND_URL}/upload-file`);
+        console.log('File details:', {
+            name: file.name,
+            type: file.type,
+            size: file.size
         });
+        
+        const response = await fetch(`${BACKEND_URL}/upload-file`, {
+            method: 'POST',
+            body: formData,
+            // Don't set Content-Type header for FormData - browser will set it automatically
+        });
+
+        const data = await response.json();
+        console.log('Upload response:', data);
+
+        if (response.ok && data.success) {
+            uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
+            uploadStatus.style.color = '#27ae60';
+            
+            // Clear any existing messages and show success message
+            const welcomeMsg = chatWindow.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+            
+            appendMessage('ai', `✅ Document "${file.name}" has been successfully uploaded and processed! You can now ask questions about its content.`);
+            
+            // Enable query input
+            queryInput.disabled = false;
+            queryInput.placeholder = "Ask a question about the document...";
+            
+        } else {
+            uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.error || 'Upload failed'}`;
+            uploadStatus.style.color = '#e74c3c';
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload. Please check your connection and try again.';
+        uploadStatus.style.color = '#e74c3c';
+    }
+});
 
         // --- Query Logic - UPDATED WITH CORRECT BACKEND URL ---
         queryForm.addEventListener('submit', async (e) => {
