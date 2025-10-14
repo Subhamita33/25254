@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSearch AI - Intelligent Retrieval System for Higher Education Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #1abc9c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Get Started Button */
+        .get-started-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--accent), #16a085);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: all 0.3s;
+            animation: popIn 1s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .get-started-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 0;
+            background: linear-gradient(rgba(44, 62, 80, 0.9), rgba(44, 62, 80, 0.9)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            animation: slideInFromLeft 1s ease-out;
+        }
+
+        @keyframes slideInFromLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            animation: slideInFromRight 1s ease-out;
+        }
+
+        @keyframes slideInFromRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .search-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 50px;
+            padding: 10px;
+            display: flex;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: bounceIn 1s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .search-container input {
+            flex: 1;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            outline: none;
+        }
+
+        .search-container button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .search-container button:hover {
+            background: #16a085;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .feature-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            background: var(--light);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--secondary);
+            font-size: 2rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        /* Process Section */
+        .process {
+            background: var(--light);
+        }
+
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .step h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        /* Team Section */
+        .team {
+            background: white;
+        }
+
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .member-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .member-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .member-image {
+            width: 100%;
+            height: 250px;
+            background-color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .member-card:hover .member-image img {
+            transform: scale(1.05);
+        }
+
+        .member-info {
+            padding: 1.5rem;
+        }
+
+        .member-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .member-info p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .member-social {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .member-social a {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .member-social a:hover {
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        /* Demo Section */
+        .demo {
+            background: white;
+        }
+
+        .demo-container {
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .demo-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .demo-graphics {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .graphic-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 8px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .graphic-item:nth-child(1) { animation-delay: 0s; }
+        .graphic-item:nth-child(2) { animation-delay: 1s; }
+        .graphic-item:nth-child(3) { animation-delay: 2s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .graphic-icon {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .graphic-text {
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .demo-visual {
+            flex: 1;
+            background: var(--light);
+            border-radius: 10px;
+            padding: 2rem;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .visual-step {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--accent);
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .visual-step.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .visual-step h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .visual-step i {
+            color: var(--accent);
+        }
+
+        /* Results Section */
+        .results {
+            background: var(--light);
+        }
+
+        .results-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .query-example {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .answer {
+            background: #e8f4fc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .sources {
+            margin-top: 1.5rem;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 0.8rem;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .source-item:hover {
+            background: #e9e9e9;
+        }
+
+        .source-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .source-item i {
+            color: var(--secondary);
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #16a085;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            color: var(--accent);
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-column a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column a:hover {
+            color: var(--accent);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Authentication Page Styles */
+        .auth-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .auth-container {
+            position: relative;
+            width: 850px;
+            height: 550px;
+            background: #fff;
+            border-radius: 30px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, .2); 
+            margin: 20px;
+            overflow: hidden; 
+        }
+
+        .form-box {
+            position: absolute;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+            color: #333;
+            text-align: center;
+            padding: 40px;
+            z-index: 1;
+            transition: .6s ease-in-out 1.2s, visibility 0s 1s;
+        }
+
+        .auth-container.active .form-box {
+            right: 50%;
+        }
+
+        .form-box.SignUp {
+            visibility: hidden;
+        }
+
+        .auth-container.active .form-box.SignUp {
+            visibility: visible;
+            right: 50%;
+            left: 0;
+            width: 50%;
+        }
+
+        .auth-container h1 {
+            font-size: 36px;
+            margin: -10px 0 10px 0;
+        }
+
+        .input-box {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 13px 50px 13px 20px ;
+            background: #eee;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .input-box input::placeholder {
+            color: #888;
+            font-weight: 400;
+        } 
+
+        .input-box i {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #888;
+        }
+
+        .forgot-link {
+            margin: -15px, 0, 15px;    
+        }
+
+        .forgot-link a {
+            font-size: 14.5px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link a:hover {
+            color: #7494ec;
+            text-decoration: underline;
+        }
+
+        .auth-btn {
+            width: 100%;
+            height: 48px;
+            background: #7494ec;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            background: #5a7bd6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(116, 148, 236, 0.3);
+        }
+
+        .auth-container p {
+            margin: 15px 0;
+            font-size: 14.5px;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+        }
+
+        .social-icons a {
+            display: inline-flex;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin: 0 8px;
+            font-size: 24px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            color: #7494ec;
+        }
+
+        .toggle-box {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .toggle-box::before {
+            content: '';
+            position: absolute;
+            left: -250%;
+            width: 300%;
+            height: 100%;
+            background: #7494ec;
+            border-radius: 150px;
+            z-index: 2;  
+            transition: 1.8s ease-in-out;
+        }
+
+        .auth-container.active .toggle-box::before {
+            left: 50%;
+        }
+
+        .toggle-panel {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            transition: .6s ease-in-out;
+        }
+
+        .toggle-panel.toggle-left {
+            left: 0;
+            transition-delay: 1.2s ;
+        }
+
+        .auth-container.active .toggle-panel.toggle-left {
+            left: -50%;
+            transition-delay: .6s;
+        }
+
+        .toggle-panel.toggle-right {
+            right: -50%;
+            transition: .6s;
+        }
+
+        .auth-container.active .toggle-panel.toggle-right {
+            right: 0;
+            transition-delay: 1.2s;
+        }
+
+        .toggle-panel p {
+            margin-bottom: 20px;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .toggle-panel .auth-btn {
+            width: 160px;
+            height: 46px;
+            background: transparent;
+            border: 2px solid #fff;
+            box-shadow: none;
+        }
+
+        .close-auth {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        /* Chat Interface Styles */
+        .chat-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-window {
+            border: 1px solid #ccc; 
+            height: 250px;
+            overflow-y: scroll; 
+            padding: 10px; 
+            margin: 10px 0 20px 0; 
+            width: 100%;
+            text-align: left;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .message strong {
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        .message i {
+            margin-right: 5px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #e6e9ff;
+        }
+
+        .upload-section div:first-child {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .upload-section div:first-child div {
+            background: #7494ec;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .upload-section h2 {
+            font-size: 18px;
+            margin: 0;
+            color: #333;
+        }
+
+        .chat-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e6e9ff;
+        }
+
+        .chat-section div:first-child {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chat-section div:first-child div {
+            background: #7494ec;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .chat-section h2 {
+            font-size: 18px;
+            margin: 0;
+            color: #333;
+        }
+
+        #status-indicator {
+            margin-top: 15px;
+            display: none;
+        }
+
+        #status-indicator div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: #f0f4ff;
+            border-radius: 8px;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #7494ec;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        /* Scrollbar Styling */
+        .chat-window {
+            scrollbar-width: thin;
+            scrollbar-color: #7494ec #f1f1f1;
+        }
+
+        .chat-window::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-window::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background: #7494ec;
+            border-radius: 3px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover {
+            background: #5a7bd6;
+        }
+
+        /* Message Styling */
+        .message {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            line-height: 1.4;
+        }
+
+        .message.user {
+            background: #f0f4ff;
+            border-left: 4px solid #7494ec;
+            margin-left: 20px;
+        }
+
+        .message.ai {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            margin-right: 20px;
+        }
+
+        .message.welcome-message {
+            background: transparent;
+            border: none;
+            text-align: center;
+        }
+
+        .message strong {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Interactive Elements */
+        .input-box input:focus {
+            border: 2px solid #7494ec;
+            background: #f8f9ff;
+        }
+
+        .auth-btn:hover {
+            background: #5a7bd6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(116, 148, 236, 0.3);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Error Message Styling */
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                gap: 15px;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+            
+            .demo-container {
+                flex-direction: column;
+            }
+            
+            .process-steps {
+                flex-direction: column;
+            }
+
+            .auth-container {
+                width: 90%;
+                height: 80%;
+            }
+
+            .form-box {
+                width: 100%;
+                height: 70%;
+            }
+            
+            .auth-container.active .form-box {
+                right: 0;
+                bottom: 30%;
+            }
+
+            .toggle-box::before {
+                left: 0;
+                top: -270%;
+                width: 100%;
+                height: 300%;
+                border-radius: 20vw;
+            }
+            
+            .auth-container.active .toggle-box::before {
+                left: 0;
+                top: 70%;
+            }
+
+            .toggle-panel {
+                width: 100%;
+                height: 30%;
+            }
+
+            .toggle-panel.toggle-left {
+                top: 0;
+            }
+            
+            .auth-container.active .toggle-panel.toggle-left {
+                left: 0;
+                top: -30%;
+            }
+
+            .toggle-panel.toggle-right {
+                right: 0;
+                bottom: -30%;
+            }
+
+            .auth-container.active .toggle-panel.toggle-right {
+                bottom: 0;
+            }
+        }
+
+        @media screen and (max-width: 650px) {
+            .form-box {
+                padding: 20px;
+            }
+
+            .toggle-panel h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Website Content -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h1>EduSearch <span>AI</span></h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#process">How It Works</a></li>
+                        <li><a href="#team">Our Team</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#results">Results</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <button class="get-started-btn">Get Started</button>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <h2>Intelligent Retrieval System for Higher Education Data</h2>
+            <p>An AI-powered solution for quick and accurate access to regulations, policies, schemes, and projects from the Department of Higher Education.</p>
+            <div class="search-container">
+                <input type="text" placeholder="Ask a question about higher education policies...">
+                <button>Search</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Key Features</h2>
+                <p>EduSearch AI transforms how officials access and utilize higher education data</p>
+            </div>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Intelligent Search</h3>
+                    <p>Natural language queries that understand context and intent for precise information retrieval.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Vector Database</h3>
+                    <p>Advanced vector storage for efficient similarity search across thousands of documents.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI-Powered Insights</h3>
+                    <p>LLM integration provides accurate, contextual answers based on authentic sources.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section process" id="process">
+        <div class="container">
+            <div class="section-title">
+                <h2>How EduSearch AI Works</h2>
+                <p>Our intelligent retrieval system follows a streamlined process to deliver accurate information</p>
+            </div>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Document Processing</h3>
+                    <p>Regulations, policies, and documents are broken into smaller chunks and converted into numerical representations (embeddings).</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Vector Storage</h3>
+                    <p>These embeddings are stored in a specialized vector database optimized for similarity search.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Query Processing</h3>
+                    <p>When a question is asked, it's converted to embeddings and matched against the database.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Answer Generation</h3>
+                    <p>Retrieved document chunks are sent to an LLM to generate precise, human-readable answers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section team" id="team">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Team</h2>
+                <p>Meet the talented individuals behind EduSearch AI</p>
+            </div>
+            <div class="team-members">
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./team-on.jpg" alt="Subhamita Pandit">
+                    </div>
+                    <div class="member-info">
+                        <h3>Subhamita Pandit</h3>
+                        <p>Project Lead & Frontend Developer</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/subhamita-pandit" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./team-four.jpg" alt="Nikita Chanda">
+                    </div>
+                    <div class="member-info">
+                        <h3>Nikita Chanda</h3>
+                        <p>UI/UX Designer</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/nikitachanda13" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./team-two.jpg" alt="Himanshu Sharma">
+                    </div>
+                    <div class="member-info">
+                        <h3>Himanshu Sharma</h3>
+                        <p>Backend Developer</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/himanshu-sharma-8155b8247" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./IMG_20251001_132058.jpg" alt="Santu Manna">
+                    </div>
+                    <div class="member-info">
+                        <h3>Santu Manna</h3>
+                        <p>ML Developer</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/santu-manna-4b92aa253" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./team-three.jpg" alt="Tanisha Yeasmin">
+                    </div>
+                    <div class="member-info">
+                        <h3>Tanisha Yeasmin</h3>
+                        <p>Data Analyst</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/tanisha-yeasmin-" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <div class="member-image">
+                        <img src="./team-one.jpg" alt="Bibek Panda">
+                    </div>
+                    <div class="member-info">
+                        <h3>Bibek Panda</h3>
+                        <p>Frontend Developer</p>
+                        <div class="member-social">
+                            <a href="https://www.linkedin.com/in/bibek-panda-431ab7246" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section demo" id="demo">
+        <div class="container">
+            <div class="section-title">
+                <h2>System Demo</h2>
+                <p>See how EduSearch AI processes your queries and delivers accurate information</p>
+            </div>
+            <div class="demo-container">
+                <div class="demo-text">
+                    <h3>Intelligent Document Retrieval</h3>
+                    <p>EduSearch AI revolutionizes how officials access critical information by combining advanced AI with a comprehensive database of higher education documents.</p>
+                    <p>The system eliminates the need for manual searches through thousands of pages of regulations, policies, and guidelines. Instead, officials can ask natural language questions and receive precise, context-aware answers in seconds.</p>
+                    <p>By leveraging vector embeddings and similarity search, EduSearch AI ensures that even complex queries return the most relevant information from authentic sources.</p>
+                    
+                    <div class="demo-graphics">
+                        <div class="graphic-item">
+                            <div class="graphic-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="graphic-text">
+                                <strong>AI-Powered Analysis</strong><br>
+                                Advanced NLP understands context and intent
+                            </div>
+                        </div>
+                        <div class="graphic-item">
+                            <div class="graphic-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="graphic-text">
+                                <strong>Lightning Fast Results</strong><br>
+                                Get answers in seconds, not hours
+                            </div>
+                        </div>
+                        <div class="graphic-item">
+                            <div class="graphic-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="graphic-text">
+                                <strong>Verified Sources</strong><br>
+                                All information from authenticated documents
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-visual">
+                    <div class="visual-step">
+                        <h4><i class="fas fa-file-alt"></i> Document Collection</h4>
+                        <p>Regulations, policies, schemes, and projects from the Department of Higher Education</p>
+                    </div>
+                    <div class="visual-step">
+                        <h4><i class="fas fa-code-branch"></i> Chunking & Embedding</h4>
+                        <p>Documents are broken into smaller pieces and converted to numerical representations</p>
+                    </div>
+                    <div class="visual-step">
+                        <h4><i class="fas fa-database"></i> Vector Database</h4>
+                        <p>Embeddings are stored in a specialized database optimized for similarity search</p>
+                    </div>
+                    <div class="visual-step">
+                        <h4><i class="fas fa-search"></i> Query & Retrieval</h4>
+                        <p>User questions are matched against the database to find the most relevant chunks</p>
+                    </div>
+                    <div class="visual-step">
+                        <h4><i class="fas fa-robot"></i> Answer Generation</h4>
+                        <p>LLM uses retrieved chunks to formulate precise, human-readable answers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section results" id="results">
+        <div class="container">
+            <div class="section-title">
+                <h2>Example Results</h2>
+                <p>See how EduSearch AI responds to typical queries from education officials</p>
+            </div>
+            <div class="results-container">
+                <div class="query-example">
+                    <p><strong>Query:</strong> "What are the new guidelines for research project funding in 2023?"</p>
+                </div>
+                <div class="answer">
+                    <p><strong>Answer:</strong> According to the 2023 Research Funding Guidelines issued by the Department of Higher Education, research project funding has been updated with the following key changes:</p>
+                    <ul>
+                        <li>Increased funding allocation for interdisciplinary research projects by 15%</li>
+                        <li>Simplified application process with a new single-window clearance system</li>
+                        <li>Extended eligibility to include private institutions with NAAC A+ grade or higher</li>
+                        <li>New focus areas include climate change studies, AI in education, and sustainable development</li>
+                        <li>Mandatory inclusion of early-career researchers in project teams</li>
+                    </ul>
+                    <p>The complete guidelines document (REF/GDL/2023/07) was published on March 15, 2023, and applies to all funding applications submitted after April 1, 2023.</p>
+                </div>
+                <div class="sources">
+                    <h4>Sources:</h4>
+                    <div class="source-item">
+                        <div class="source-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Quantum_Computing_Future_of_Cryptography.pdf - Quantum Computing: The Future of Cryptography</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadPDF('Quantum_Computing_Future_of_Cryptography.pdf')">Download</button>
+                    </div>
+                    <div class="source-item">
+                        <div class="source-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Human_Computer_Interaction_and_UX_Design_Research.pdf - Human-Computer Interaction and UX Design Research</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadPDF('Human_Computer_Interaction_and_UX_Design_Research.pdf')">Download</button>
+                    </div>
+                    <div class="source-item">
+                        <div class="source-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Data_Privacy_and_Cybersecurity_Research_Trends.pdf - Data Privacy and Cybersecurity Research Trends</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadPDF('Data_Privacy_and_Cybersecurity_Research_Trends.pdf')">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>EduSearch AI</h3>
+                    <p>Intelligent Retrieval System for Higher Education Data, empowering officials with accurate, timely information for better decision-making.</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#process">How It Works</a></li>
+                        <li><a href="#team">Our Team</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#results">Results</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@edusearch.ai</li>
+                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Department of Higher Education, MoE</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 EduSearch AI - Intelligent Retrieval System for Higher Education Data. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Authentication Page -->
+    <div class="auth-page" id="authPage">
+        <div class="auth-container" id="authContainer">
+            <button class="close-auth" id="closeAuth">&times;</button>
+            
+            <!-- Login Form -->
+            <div class="form-box login">
+                <form id="loginForm">
+                    <h1>Login</h1>
+                    <div id="loginError" class="error-message" style="display: none;"></div>
+                    <div class="input-box">
+                        <input type="text" id="loginUsername" name="username" placeholder="Username" required>
+                        <i class="fa-solid fa-user" style="color: #000000;"></i>
+                    </div>
+                    <div class="input-box"> 
+                        <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                        <i class="fa-solid fa-lock" style="color: #000000;"></i>
+                    </div>   
+                    <div class="forgot-link">
+                        <a href="#">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="auth-btn">Login</button>
+                    <p>or login with social platforms</p>
+                    <div class="social-icons">                   
+                        <a href="#"><i class="fa-brands fa-google"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-github"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Signup Form -->
+            <div class="form-box SignUp">
+                <form id="signupForm">
+                    <h1>Sign Up</h1>
+                    <div id="signupError" class="error-message" style="display: none;"></div>
+                    <div class="input-box">
+                        <input type="text" id="signupUsername" name="username" placeholder="Username" required>
+                        <i class="fa-solid fa-user" style="color: #000000;"></i>
+                    </div>
+                     <div class="input-box">
+                        <input type="email" id="signupEmail" name="email" placeholder="Email" required>
+                        <i class="fa-solid fa-envelope" style="color: #000000;"></i>
+                    </div>
+                    <div class="input-box"> 
+                        <input type="password" id="signupPassword" name="password" placeholder="Password" required>
+                        <i class="fa-solid fa-lock" style="color: #000000;"></i>
+                    </div>   
+                    
+                    <button type="submit" class="auth-btn">Sign Up</button>
+                    <p>or sign Up with social platforms</p>
+                    <div class="social-icons">                   
+                        <a href="#"><i class="fa-brands fa-google"></i></a>
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-github"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Toggle Panels -->
+            <div class="toggle-box">
+                <div class="toggle-panel toggle-left">
+                    <h1>Hello, Welcome!</h1>
+                    <p>Don't have an account?</p>
+                    <button class="auth-btn SignUp-btn">SignUp</button>
+                </div>
+                 
+                <div class="toggle-panel toggle-right">
+                    <h1>Welcome Back!</h1>
+                    <p>Already have an account?</p>
+                    <button class="auth-btn login-btn">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="chat-container" id="chatContainer">
+        <div class="auth-container active">
+            <button class="close-auth" id="closeChat">&times;</button>
+            
+            <div class="form-box SignUp">
+                <!-- Header Section -->
+                <div class="header-section">
+                    <h1 style="margin-bottom: 5px; color: #333;">
+                        <i class="fas fa-file-alt" style="margin-right: 10px; color: #7494ec;"></i>
+                        Document RAG Chat
+                    </h1>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        Upload documents and get intelligent answers using AI
+                    </p>
+                </div>
+
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <div>
+                        <div>
+                            <i class="fas fa-upload" style="color: white; font-size: 14px;"></i>
+                        </div>
+                        <h2>Upload Document</h2>
+                    </div>
+                    
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="input-box" style="margin-bottom: 15px; position: relative;">
+                            <input type="file" id="file-input" name="file" accept=".pdf,.docx,.doc" required 
+                                   style="padding: 15px 50px 15px 20px; cursor: pointer;">
+                            <i class="fas fa-file-upload" style="color: #7494ec;"></i>
+                        </div>
+                        <button type="submit" class="auth-btn upload-btn" style="margin: 0;">
+                            <i class="fas fa-cloud-upload-alt" style="margin-right: 8px;"></i>
+                            Upload & Process Document
+                        </button>
+                    </form>
+                    <p id="upload-status" style="margin-top: 12px; font-size: 13px; text-align: left; min-height: 20px; padding: 0 5px;"></p>
+                </div>
+
+                <!-- Chat Section -->
+                <div class="chat-section">
+                    <div>
+                        <div>
+                            <i class="fas fa-comments" style="color: white; font-size: 14px;"></i>
+                        </div>
+                        <h2>Ask Questions</h2>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <div id="chat-window" class="chat-window" style="height: 250px; background: white; border: 1px solid #e1e5e9;">
+                        <div class="message ai welcome-message">
+                            <div style="text-align: center; padding: 20px;">
+                                <i class="fas fa-robot" style="font-size: 32px; color: #7494ec; margin-bottom: 10px;"></i>
+                                <p style="margin: 5px 0; color: #666;">
+                                    <strong>Welcome to Document RAG Chat!</strong>
+                                </p>
+                                <p style="margin: 5px 0; font-size: 13px; color: #888;">
+                                    Upload a document to start asking questions about its content.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Query Form -->
+                    <form id="query-form" class="query-form" style="margin-top: 15px;">
+                        <div class="input-box" style="margin-bottom: 10px;">
+                            <input type="text" id="query-input" placeholder="Type your question here..." required 
+                                   style="padding: 15px 50px 15px 20px;">
+                            <i class="fas fa-question-circle" style="color: #7494ec;"></i>
+                        </div>
+                        <button type="submit" id="send-button" class="auth-btn send-btn">
+                            <i class="fas fa-paper-plane" style="margin-right: 8px;"></i>
+                            Send Question
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Status Indicator -->
+                <div id="status-indicator" style="margin-top: 15px; display: none;">
+                    <div>
+                        <div class="loading-spinner"></div>
+                        <span style="color: #7494ec; font-size: 13px;">Processing your question...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="toggle-box">
+                <div class="toggle-panel toggle-left">
+                    <div style="text-align: center;">
+                        <i class="fas fa-file-search" style="font-size: 48px; margin-bottom: 20px; color: white;"></i>
+                        <h1>Smart Document Q&A</h1>
+                        <p>Upload PDF or Word documents and get instant answers powered by AI technology.</p>
+                    </div>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <div style="text-align: center;">
+                        <i class="fas fa-brain" style="font-size: 48px; margin-bottom: 20px; color: white;"></i>
+                        <h1>AI-Powered Insights</h1>
+                        <p>Built with FastAPI, LangChain, FAISS, and Groq for intelligent document analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PDF content for download
+        const pdfContent = {
+            'Quantum_Computing_Future_of_Cryptography.pdf': `# Quantum Computing: The Future of Cryptography
+
+## Abstract
+Quantum computing represents a paradigm shift in computation, leveraging the principles of quantum mechanics—superposition, entanglement, and quantum interference—to perform calculations beyond the reach of classical systems. This paper explores the potential impact of quantum computing on cryptography, examining threats to existing encryption standards, emerging post-quantum cryptographic schemes, and the future landscape of secure digital communication.`,
+
+            'Human_Computer_Interaction_and_UX_Design_Research.pdf': `# Human-Computer Interaction and UX Design Research
+
+## Abstract
+Human–Computer Interaction (HCI) and User Experience (UX) Design together define how people engage with technology. This paper explores the evolution, methodologies, and emerging trends in HCI and UX research, focusing on the intersection of psychology, computer science, and design. It emphasizes user-centered design principles, usability evaluation, accessibility, and the growing role of AI-driven personalization in shaping the next generation of interactive systems.`,
+
+            'Data_Privacy_and_Cybersecurity_Research_Trends.pdf': `# Data Privacy and Cybersecurity Research Trends
+
+## Abstract
+This paper explores evolving research directions in data privacy and cybersecurity amid the exponential growth of digital transformation. It examines challenges such as data breaches, surveillance capitalism, ransomware, and AI-driven attacks, while evaluating frameworks and technologies developed to counter them. Through an interdisciplinary lens, it highlights policy evolution, privacy-preserving computation, and ethical considerations shaping the future of digital security.`
+        };
+
+        // Function to download PDF
+        function downloadPDF(filename) {
+            const content = pdfContent[filename];
+            if (content) {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Scroll animation for sections
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            const featureCards = document.querySelectorAll('.feature-card');
+            const steps = document.querySelectorAll('.step');
+            const memberCards = document.querySelectorAll('.member-card');
+            const visualSteps = document.querySelectorAll('.visual-step');
+            
+            // Function to check if element is in viewport
+            function isInViewport(element) {
+                const rect = element.getBoundingClientRect();
+                return (
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+                    rect.bottom >= 0
+                );
+            }
+            
+            // Function to handle scroll animations
+            function handleScrollAnimations() {
+                sections.forEach(section => {
+                    if (isInViewport(section)) {
+                        section.classList.add('visible');
+                    }
+                });
+                
+                featureCards.forEach(card => {
+                    if (isInViewport(card)) {
+                        card.classList.add('visible');
+                    }
+                });
+                
+                steps.forEach(step => {
+                    if (isInViewport(step)) {
+                        step.classList.add('visible');
+                    }
+                });
+                
+                memberCards.forEach(card => {
+                    if (isInViewport(card)) {
+                        card.classList.add('visible');
+                    }
+                });
+                
+                visualSteps.forEach(step => {
+                    if (isInViewport(step)) {
+                        step.classList.add('visible');
+                    }
+                });
+            }
+            
+            // Initial check on page load
+            handleScrollAnimations();
+            
+            // Check on scroll
+            window.addEventListener('scroll', handleScrollAnimations);
+            
+            // Get Started button functionality
+            const getStartedBtn = document.querySelector('.get-started-btn');
+            const authPage = document.getElementById('authPage');
+            const closeAuth = document.getElementById('closeAuth');
+            
+            getStartedBtn.addEventListener('click', function() {
+                authPage.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeAuth.addEventListener('click', function() {
+                authPage.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Close auth when clicking outside the container
+            authPage.addEventListener('click', function(e) {
+                if (e.target === authPage) {
+                    authPage.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            // Authentication Toggle Logic
+            const authContainer = document.getElementById('authContainer');
+            const SignUpBtn = document.querySelector('.SignUp-btn');
+            const loginToggleBtn = document.querySelector('.login-btn');
+            
+            SignUpBtn.addEventListener('click', () => {
+                authContainer.classList.add('active');
+            });
+            
+            loginToggleBtn.addEventListener('click', () => {
+                authContainer.classList.remove('active');
+            });
+            
+            // Authentication Logic - UPDATED WITH BACKEND INTEGRATION
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginError = document.getElementById('loginError');
+            const signupError = document.getElementById('signupError');
+            const chatContainer = document.getElementById('chatContainer');
+            const closeChat = document.getElementById('closeChat');
+            
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Successful login - show chat interface
+                        authPage.style.display = 'none';
+                        chatContainer.style.display = 'flex';
+                        loginError.style.display = 'none';
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        loginError.textContent = data.error;
+                        loginError.style.display = 'block';
+                    }
+                } catch (error) {
+                    loginError.textContent = 'Network error during login';
+                    loginError.style.display = 'block';
+                }
+            });
+            
+            signupForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const username = document.getElementById('signupUsername').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                
+                try {
+                    const response = await fetch('/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Switch to login form
+                        authContainer.classList.remove('active');
+                        signupError.style.display = 'none';
+                        
+                        // Clear form
+                        document.getElementById('signupUsername').value = '';
+                        document.getElementById('signupEmail').value = '';
+                        document.getElementById('signupPassword').value = '';
+                        
+                        alert('Registration successful! Please login with your credentials.');
+                    } else {
+                        signupError.textContent = data.error;
+                        signupError.style.display = 'block';
+                    }
+                } catch (error) {
+                    signupError.textContent = 'Network error during registration';
+                    signupError.style.display = 'block';
+                }
+            });
+            
+            // Close chat interface
+            closeChat.addEventListener('click', function() {
+                chatContainer.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Chat Interface Logic - UPDATED WITH BACKEND INTEGRATION
+            const uploadForm = document.getElementById('upload-form');
+            const queryForm = document.getElementById('query-form');
+            const chatWindow = document.getElementById('chat-window');
+            const uploadStatus = document.getElementById('upload-status');
+            const sendButton = document.getElementById('send-button');
+            const statusIndicator = document.getElementById('status-indicator');
+            const queryInput = document.getElementById('query-input');
+
+            // Apply 'active' class to keep the chat interface visible
+            document.querySelector('#chatContainer .auth-container').classList.add('active');
+
+            // --- Chat Display Utility ---
+            function appendMessage(sender, text) {
+                // Remove welcome message if it exists
+                const welcomeMsg = chatWindow.querySelector('.welcome-message');
+                if (welcomeMsg) {
+                    welcomeMsg.remove();
+                }
+
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${sender}`;
+
+                let senderName = sender === 'user' ? 'YOU' : 'AI';
+                let icon = sender === 'user' ? 'fas fa-user' : 'fas fa-robot';
+                let iconColor = sender === 'user' ? '#7494ec' : '#28a745';
+
+                msgDiv.innerHTML = `
+                    <strong style="color: ${iconColor};">
+                        <i class="${icon}" style="margin-right: 6px;"></i>${senderName}
+                    </strong>
+                    <div style="color: #333; font-size: 14px; line-height: 1.5;">${text.replace(/\n/g, '<br>')}</div>
+                `;
+
+                chatWindow.appendChild(msgDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            // --- File Upload Logic - UPDATED WITH BACKEND INTEGRATION ---
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fileInput = document.getElementById('file-input');
+                
+                if (!fileInput.files[0]) {
+                    uploadStatus.textContent = 'Please select a file first.';
+                    uploadStatus.style.color = '#e74c3c';
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Processing document...';
+                uploadStatus.style.color = '#7494ec';
+
+                try {
+                    const response = await fetch('/upload-file', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        uploadStatus.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px; color: #27ae60;"></i>${data.message}`;
+                        uploadStatus.style.color = '#27ae60';
+                        
+                        // Clear any existing messages and show success message
+                        const welcomeMsg = chatWindow.querySelector('.welcome-message');
+                        if (welcomeMsg) welcomeMsg.remove();
+                        
+                        appendMessage('ai', `✅ Document "${fileInput.files[0].name}" has been successfully processed! You can now ask questions about its content.`);
+                        
+                        // Enable query input
+                        queryInput.disabled = false;
+                        queryInput.placeholder = "Ask a question about the document...";
+                        
+                    } else {
+                        uploadStatus.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>Error: ${data.detail}`;
+                        uploadStatus.style.color = '#e74c3c';
+                    }
+                } catch (error) {
+                    uploadStatus.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>Network error during upload.';
+                    uploadStatus.style.color = '#e74c3c';
+                }
+            });
+
+            // --- Query Logic - UPDATED WITH BACKEND INTEGRATION ---
+            queryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const question = queryInput.value.trim();
+
+                if (!question) return;
+
+                // Display user question
+                appendMessage('user', question);
+                queryInput.value = '';
+                queryInput.disabled = true;
+                sendButton.disabled = true;
+                statusIndicator.style.display = 'block';
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: question }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        appendMessage('ai', data.answer);
+                    } else {
+                        appendMessage('ai', `❌ ${data.detail || 'Failed to get answer. Please try again.'}`);
+                    }
+                } catch (error) {
+                    appendMessage('ai', '❌ Network error while processing your question. Please check your connection.');
+                } finally {
+                    queryInput.disabled = false;
+                    sendButton.disabled = false;
+                    statusIndicator.style.display = 'none';
+                    queryInput.focus();
+                }
+            });
+
+            // Enable query input when page loads (will be disabled until document is uploaded)
+            queryInput.disabled = true;
+            queryInput.placeholder = "Please upload a document first...";
+
+            // Add some interactivity to file input
+            const fileInput = document.getElementById('file-input');
+            fileInput.addEventListener('change', function() {
+                if (this.files[0]) {
+                    const fileName = this.files[0].name;
+                    uploadStatus.textContent = `Selected: ${fileName}`;
+                    uploadStatus.style.color = '#27ae60';
+                }
+            });
+
+            // Auto-focus on query input when it becomes enabled
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (!queryInput.disabled) {
+                        queryInput.focus();
+                    }
+                });
+            });
+            
+            observer.observe(queryInput, { attributes: true, attributeFilter: ['disabled'] });
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Search functionality for demonstration
+            document.querySelector('.search-container button').addEventListener('click', function() {
+                const query = document.querySelector('.search-container input').value;
+                if (query.trim() !== '') {
+                    alert(`Searching for: "${query}"\n\nIn a full implementation, this would trigger the AI retrieval process.`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
