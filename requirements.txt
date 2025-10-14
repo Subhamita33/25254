@@ -1,0 +1,11 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+langchain==0.0.346
+langchain-groq==0.1.1
+langchain-community==0.0.13
+langchain-core==0.1.23
+faiss-cpu==1.7.4
+unstructured==0.10.30
+pypdf==3.17.1
+python-multipart==0.0.6
+python-dotenv==1.0.0
