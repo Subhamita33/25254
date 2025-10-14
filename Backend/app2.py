@@ -7,7 +7,10 @@ app = FastAPI(title="EduSearch AI Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000",
+        "http://localhost:8000",
+        "https://edusearch-ai.netlify.app/",  # REPLACE THIS
+        "https://*.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,3 +52,4 @@ async def chat(request: ChatRequest):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
