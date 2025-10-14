@@ -1,12 +1,12 @@
 import os
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_groq import ChatGroq
-from langchain_community.document_loaders import PyPDFLoader, UnstructuredWordDocumentLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
@@ -55,7 +55,9 @@ def process_and_index_file(file_path: str, file_type: str):
         if file_type == 'pdf':
             loader = PyPDFLoader(file_path)
         elif file_type in ['docx', 'doc']:
-            loader = UnstructuredWordDocumentLoader(file_path, mode="elements")
+            # Use PyPDFLoader as fallback or implement docx parsing
+            from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+            loader = UnstructuredWordDocumentLoader(file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
 
@@ -72,8 +74,8 @@ def process_and_index_file(file_path: str, file_type: str):
         )
         texts = text_splitter.split_documents(all_documents)
 
-        # Use the same BGE embedding model
-        embeddings = HuggingFaceBgeEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        # Use HuggingFace embeddings
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
         # Create the FAISS vector store
         vector_store = FAISS.from_documents(texts, embeddings)
