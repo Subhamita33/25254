@@ -1856,7 +1856,71 @@ This paper explores evolving research directions in data privacy and cybersecuri
         const signupError = document.getElementById('signupError');
         const chatContainer = document.getElementById('chatContainer');
         const closeChat = document.getElementById('closeChat');
+        loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    console.log('🔧 Attempting login...');
+    
+    try {
+        loginError.style.display = 'none';
         
+        const response = await fetch(`${BACKEND_URL}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        });
+        
+        console.log('📡 Login response status:', response.status);
+        const data = await response.json();
+        console.log('📨 Login response data:', data);
+        
+        if (data.success) {
+            // SUCCESSFUL LOGIN - FIXED VERSION
+            console.log('✅ Login successful, showing chat...');
+            
+            // Method 1: Hide auth completely
+            authPage.style.display = 'none';
+            authPage.style.visibility = 'hidden';
+            authPage.style.opacity = '0';
+            
+            // Method 2: Show chat with multiple approaches
+            chatContainer.style.display = 'flex';
+            chatContainer.style.visibility = 'visible';
+            chatContainer.style.opacity = '1';
+            chatContainer.style.zIndex = '2001'; // Higher than auth
+            
+            // Method 3: Remove any hiding classes
+            chatContainer.classList.remove('hidden');
+            chatContainer.classList.add('active');
+            
+            // Method 4: Force body overflow hidden
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            
+            // Method 5: Small delay to ensure rendering
+            setTimeout(() => {
+                chatContainer.style.display = 'flex';
+                console.log('🔄 Chat display refreshed');
+            }, 50);
+            
+            loginError.style.display = 'none';
+            console.log('🎉 Chat interface should be visible now');
+            
+        } else {
+            loginError.textContent = data.error || 'Login failed. Please try again.';
+            loginError.style.display = 'block';
+            console.log('❌ Login failed:', data.error);
+        }
+    } catch (error) {
+        console.error('💥 Login error:', error);
+        loginError.textContent = 'Network error during login. Please check your connection.';
+        loginError.style.display = 'block';
+    }
+});
         
         signupForm.addEventListener('submit', async function(e) {
             e.preventDefault();
